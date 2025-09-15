@@ -13,9 +13,9 @@ export default function Index() {
   const [signupOpen, setSignupOpen] = useState(false);
 
   return (
-    <div className="relative min-h-screen overflow-hidden bg-gradient-to-br from-[hsl(258,89%,60%)] via-[hsl(280,85%,65%)] to-[hsl(190,90%,55%)]">
+    <div className="relative min-h-screen overflow-hidden bg-gradient-to-br from-indigo-600 via-indigo-500 to-emerald-500">
       <div className="pointer-events-none absolute inset-0">
-        <div className="absolute -top-24 -left-24 h-72 w-72 rounded-full bg-fuchsia-400/40 blur-3xl animate-pulse" />
+        <div className="absolute -top-24 -left-24 h-72 w-72 rounded-full bg-indigo-400/40 blur-3xl animate-pulse" />
         <div className="absolute -bottom-24 -right-24 h-72 w-72 rounded-full bg-cyan-400/40 blur-3xl animate-pulse [animation-delay:200ms]" />
         <div className="absolute left-1/2 top-1/2 h-96 w-96 -translate-x-1/2 -translate-y-1/2 rounded-full bg-white/10 blur-3xl" />
       </div>
@@ -24,7 +24,7 @@ export default function Index() {
         <nav className="container flex h-16 items-center justify-between text-white">
           <div className="flex items-center gap-2">
             <div className="size-8 rounded-md bg-white/90" />
-            <div className="text-xl font-extrabold tracking-tight">ZyraX</div>
+            <div className="text-xl font-extrabold tracking-tight">Team-Work</div>
           </div>
           <div className="flex items-center gap-2">
             <Button variant="secondary" onClick={() => setLoginOpen(true)}>Login</Button>
@@ -37,21 +37,21 @@ export default function Index() {
         <div className="grid items-center gap-10 md:grid-cols-2">
           <div>
             <h1 className="text-5xl md:text-6xl font-extrabold leading-tight drop-shadow-lg">
-              Dashing, Animated, International-grade App
+              Team-Work — Modern, Animated Dashboard Suite
             </h1>
             <p className="mt-4 max-w-xl text-white/90">
-              Create account ya login karain. Login ke baad powerful dashboard with colorful quick style, collapsible sidebar, team sales analytics, aur team chat.
+              Collaborate. Sell. Succeed. Create an account or sign in to access a powerful dashboard with a collapsible sidebar, vibrant quick styles, sales analytics, and team chat.
             </p>
             <div className="mt-8 flex gap-3">
               <Button size="lg" onClick={() => setSignupOpen(true)}>Start as Admin</Button>
               <Button size="lg" variant="secondary" onClick={() => setLoginOpen(true)}>Login</Button>
             </div>
-            <div className="mt-6 text-sm text-white/80">Pehla signup hoga Admin. Sirf Admin ko Admin Panel dikhega.</div>
+            <div className="mt-6 text-sm text-white/80">The first account to sign up becomes the Admin. Only Admins can see the Admin Panel.</div>
           </div>
           <div className="relative">
             <div className="relative rounded-2xl border border-white/20 bg-white/10 p-4 shadow-2xl backdrop-blur">
               <div className="grid grid-cols-3 gap-3">
-                <div className="h-24 rounded-xl bg-gradient-to-br from-fuchsia-500 to-pink-500" />
+                <div className="h-24 rounded-xl bg-gradient-to-br from-indigo-500 to-emerald-500" />
                 <div className="h-24 rounded-xl bg-gradient-to-br from-cyan-400 to-blue-500" />
                 <div className="h-24 rounded-xl bg-gradient-to-br from-amber-400 to-yellow-500" />
                 <div className="col-span-3 h-36 rounded-xl bg-white/20" />
@@ -80,7 +80,7 @@ function AuthModals({ loginOpen, setLoginOpen, signupOpen, setSignupOpen, onSucc
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Login</DialogTitle>
-            <DialogDescription>Login ke baad dashboard show hoga.</DialogDescription>
+            <DialogDescription>After login, the dashboard will be shown.</DialogDescription>
           </DialogHeader>
           <LoginForm onSuccess={(u) => { setLoginOpen(false); onSuccess(u); }} />
         </DialogContent>
@@ -89,7 +89,7 @@ function AuthModals({ loginOpen, setLoginOpen, signupOpen, setSignupOpen, onSucc
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Create Account</DialogTitle>
-            <DialogDescription>Pehla signup Admin banega.</DialogDescription>
+            <DialogDescription>The first account to sign up becomes the Admin.</DialogDescription>
           </DialogHeader>
           <SignupForm onSuccess={(u) => { setSignupOpen(false); onSuccess(u); }} />
         </DialogContent>
