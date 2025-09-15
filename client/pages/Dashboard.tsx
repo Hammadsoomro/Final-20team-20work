@@ -1,9 +1,19 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Crown, LogOut, MessageCircle, Plus, Shield, Users } from "lucide-react";
+import {
+  BarChart3,
+  Crown,
+  LayoutDashboard,
+  LogOut,
+  MessageCircle,
+  Settings as SettingsIcon,
+  Shield,
+  SortAsc,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import {
   Sidebar,
   SidebarContent,
@@ -16,7 +26,6 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarProvider,
-  SidebarSeparator,
   SidebarTrigger,
 } from "@/components/ui/sidebar";
 import { useAuth } from "@/context/AuthContext";
@@ -32,9 +41,11 @@ import {
 } from "@/lib/auth";
 
 export default function Dashboard() {
-  const { user, logout: doLogout } = useAuth();
+  const { user, logout: authLogout } = useAuth();
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState<"overview" | "team" | "chat" | "admin">("overview");
+  const [active, setActive] = useState<
+    "dashboard" | "team-chat" | "number-sorter" | "sales" | "admin" | "settings"
+  >("dashboard");
   const [users, setUsers] = useState<User[]>([]);
 
   useEffect(() => {
@@ -44,47 +55,74 @@ export default function Dashboard() {
 
   const crown = useMemo(() => topSeller(), [users]);
   const todaySales = useMemo(() => users.reduce((s, u) => s + (u.salesToday || 0), 0), [users]);
-  const monthSales = useMemo(() => users.reduce((s, u) => s + (u.salesMonth || 0), 0), [users]);
+  const monthSales = useMemo(
+    () => users.reduce((s, u) => s + (u.salesMonth || 0), 0),
+    [users],
+  );
 
   const refresh = () => setUsers(getUsers());
+  const canUseSorter = user?.role === "admin" || user?.role === "scrapper";
 
   return (
     <SidebarProvider>
       <Sidebar collapsible="icon" variant="floating">
         <SidebarHeader>
           <div className="flex items-center gap-2 px-2 py-1.5">
-            <div className="size-6 rounded-md bg-gradient-to-br from-fuchsia-500 to-cyan-400" />
-            <div className="font-extrabold tracking-tight">ZyraX</div>
+            <div className="size-6 rounded-md bg-gradient-to-br from-indigo-500 to-emerald-400" />
+            <div className="font-extrabold tracking-tight">Team-Work</div>
           </div>
         </SidebarHeader>
         <SidebarContent>
           <SidebarGroup>
-            <SidebarGroupLabel>Quick Links</SidebarGroupLabel>
+            <SidebarGroupLabel>Menu</SidebarGroupLabel>
             <SidebarGroupContent>
               <SidebarMenu>
                 <SidebarMenuItem>
-                  <SidebarMenuButton isActive={activeTab === "overview"} onClick={() => setActiveTab("overview")}>Overview</SidebarMenuButton>
-                </SidebarMenuItem>
-                <SidebarMenuItem>
-                  <SidebarMenuButton onClick={() => setActiveTab("team")} isActive={activeTab === "team"}>
-                    <Users />
-                    <span>Team</span>
+                  <SidebarMenuButton isActive={active === "dashboard"} onClick={() => setActive("dashboard")}>
+                    <LayoutDashboard />
+                    <span>Dashboard</span>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
                 <SidebarMenuItem>
-                  <SidebarMenuButton onClick={() => setActiveTab("chat")} isActive={activeTab === "chat"}>
+                  <SidebarMenuButton isActive={active === "team-chat"} onClick={() => setActive("team-chat")}>
                     <MessageCircle />
                     <span>Team Chat</span>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
+                {canUseSorter && (
+                  <SidebarMenuItem>
+                    <SidebarMenuButton isActive={active === "number-sorter"} onClick={() => setActive("number-sorter")}>
+                      <SortAsc />
+                      <span>Number Sorter</span>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                )}
+                <SidebarMenuItem>
+                  <SidebarMenuButton isActive={active === "sales"} onClick={() => setActive("sales")}>
+                    <BarChart3 />
+                    <span>Sales Tracker</span>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
                 {user?.role === "admin" && (
                   <SidebarMenuItem>
-                    <SidebarMenuButton onClick={() => setActiveTab("admin")} isActive={activeTab === "admin"}>
+                    <SidebarMenuButton isActive={active === "admin"} onClick={() => setActive("admin")}>
                       <Shield />
                       <span>Admin Panel</span>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
                 )}
+                <SidebarMenuItem>
+                  <SidebarMenuButton isActive={active === "settings"} onClick={() => setActive("settings")}>
+                    <SettingsIcon />
+                    <span>Settings</span>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+                <SidebarMenuItem>
+                  <SidebarMenuButton onClick={() => { logout(); authLogout(); navigate("/"); }}>
+                    <LogOut />
+                    <span>Sign out</span>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
               </SidebarMenu>
             </SidebarGroupContent>
           </SidebarGroup>
@@ -95,11 +133,11 @@ export default function Dashboard() {
           <div className="container flex h-14 items-center justify-between">
             <div className="flex items-center gap-3">
               <SidebarTrigger />
-              <span className="text-sm text-muted-foreground">Welcome{user ? `, ${user.name}` : ""}</span>
+              <span className="text-sm text-muted-foreground">{user ? `Signed in as ${user.name}` : ""}</span>
             </div>
             <div className="flex items-center gap-2">
               <Button variant="ghost" size="sm" onClick={() => navigate("/")}>Home</Button>
-              <Button variant="destructive" size="sm" onClick={() => { logout(); doLogout(); navigate("/"); }}>
+              <Button variant="destructive" size="sm" onClick={() => { logout(); authLogout(); navigate("/"); }}>
                 <LogOut className="mr-1" /> Logout
               </Button>
             </div>
@@ -107,14 +145,16 @@ export default function Dashboard() {
         </div>
 
         <div className="container py-6">
-          {activeTab === "overview" && (
-            <Overview users={users} todaySales={todaySales} monthSales={monthSales} crown={crown} />
+          {active === "dashboard" && (
+            <Overview users={users} todaySales={todaySales} monthSales={monthSales} crown={crown} />)
+          }
+          {active === "team-chat" && <TeamChat />}
+          {active === "number-sorter" && canUseSorter && <NumberSorter />}
+          {active === "sales" && (
+            <SalesTracker users={users} onChange={refresh} canAdjust={user?.role !== "seller"} />
           )}
-          {activeTab === "team" && <Team users={users} onChange={refresh} canManage={user?.role === "admin"} />}
-          {activeTab === "chat" && <TeamChat />}
-          {activeTab === "admin" && user?.role === "admin" && (
-            <AdminPanel onChange={refresh} />
-          )}
+          {active === "admin" && user?.role === "admin" && <AdminPanel onChange={refresh} />}
+          {active === "settings" && <Settings />}
         </div>
       </SidebarInset>
     </SidebarProvider>
@@ -124,7 +164,7 @@ export default function Dashboard() {
 function Overview({ users, todaySales, monthSales, crown }: { users: User[]; todaySales: number; monthSales: number; crown: User | null }) {
   return (
     <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-      <Card className="bg-gradient-to-br from-fuchsia-500 to-pink-500 text-white">
+      <Card className="bg-gradient-to-br from-indigo-500 to-emerald-500 text-white">
         <CardHeader>
           <CardTitle>Today Sales</CardTitle>
         </CardHeader>
@@ -171,14 +211,13 @@ function Overview({ users, todaySales, monthSales, crown }: { users: User[]; tod
   );
 }
 
-function Team({ users, onChange, canManage }: { users: User[]; onChange: () => void; canManage?: boolean }) {
+function SalesTracker({ users, onChange, canAdjust }: { users: User[]; onChange: () => void; canAdjust?: boolean }) {
   const [filter, setFilter] = useState("");
   const list = users.filter((u) => u.name.toLowerCase().includes(filter.toLowerCase()) || u.email.toLowerCase().includes(filter.toLowerCase()));
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between gap-2">
         <Input placeholder="Search team" value={filter} onChange={(e) => setFilter(e.target.value)} />
-        {canManage && <AddMember onAdded={onChange} />}
       </div>
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         {list.map((m) => (
@@ -192,9 +231,75 @@ function Team({ users, onChange, canManage }: { users: User[]; onChange: () => v
             <CardContent>
               <div className="text-sm text-muted-foreground truncate">{m.email}</div>
               <div className="mt-3 grid grid-cols-2 gap-3">
-                <Metric label="Today" value={m.salesToday ?? 0} color="from-fuchsia-500 to-pink-500" onAdd={() => { addSales(m.id, 50, 0); onChange(); }} />
-                <Metric label="Month" value={m.salesMonth ?? 0} color="from-cyan-400 to-blue-500" onAdd={() => { addSales(m.id, 0, 250); onChange(); }} />
+                <Metric label="Today" value={m.salesToday ?? 0} color="from-indigo-500 to-emerald-500" onAdd={canAdjust ? () => { addSales(m.id, 50, 0); onChange(); } : undefined} />
+                <Metric label="Month" value={m.salesMonth ?? 0} color="from-cyan-400 to-blue-500" onAdd={canAdjust ? () => { addSales(m.id, 0, 250); onChange(); } : undefined} />
               </div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function Metric({ label, value, color, onAdd }: { label: string; value: number; color: string; onAdd?: () => void }) {
+  return (
+    <div className="rounded-lg border p-3">
+      <div className="text-xs text-muted-foreground">{label}</div>
+      <div className="flex items-end justify-between">
+        <div className={`bg-gradient-to-br ${color} bg-clip-text text-transparent text-2xl font-extrabold`}>{value.toLocaleString()}</div>
+        {onAdd && (
+          <Button size="icon" variant="ghost" onClick={onAdd}>+
+          </Button>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function AdminPanel({ onChange }: { onChange: () => void }) {
+  return (
+    <div className="space-y-4">
+      <h2 className="text-2xl font-bold">Admin Controls</h2>
+      <p className="text-muted-foreground">Create, remove, or block team accounts.</p>
+      <TeamList users={getUsers()} onChange={onChange} canManage />
+    </div>
+  );
+}
+
+function TeamList({ users, onChange, canManage }: { users: User[]; onChange: () => void; canManage?: boolean }) {
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [role, setRole] = useState<"scrapper" | "seller">("seller");
+  return (
+    <div className="space-y-4">
+      {canManage && (
+        <div className="flex items-center gap-2">
+          <Input placeholder="Name" value={name} onChange={(e) => setName(e.target.value)} />
+          <Input placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} />
+          <select className="h-10 rounded-md border bg-background px-2" value={role} onChange={(e) => setRole(e.target.value as any)}>
+            <option value="seller">Seller</option>
+            <option value="scrapper">Scrapper</option>
+          </select>
+          <Button onClick={() => {
+            const current = JSON.parse(localStorage.getItem("current_user")||"null");
+            adminCreateMember(current, { name, email, role });
+            setName(""); setEmail("");
+            onChange();
+          }}>Add</Button>
+        </div>
+      )}
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+        {users.map((m) => (
+          <Card key={m.id} className={m.blocked ? "opacity-60" : ""}>
+            <CardHeader>
+              <CardTitle className="flex items-center justify-between">
+                <span className="truncate">{m.name}</span>
+                <span className="text-xs rounded-full px-2 py-0.5 bg-secondary">{m.role}</span>
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-sm text-muted-foreground truncate">{m.email}</div>
               {canManage && (
                 <div className="mt-4 flex items-center gap-2">
                   <Button size="sm" variant={m.blocked ? "secondary" : "destructive"} onClick={() => { adminToggleBlock(JSON.parse(localStorage.getItem("current_user")||"null"), m.id, !m.blocked); onChange(); }}>
@@ -211,75 +316,20 @@ function Team({ users, onChange, canManage }: { users: User[]; onChange: () => v
   );
 }
 
-function Metric({ label, value, color, onAdd }: { label: string; value: number; color: string; onAdd?: () => void }) {
-  return (
-    <div className="rounded-lg border p-3">
-      <div className="text-xs text-muted-foreground">{label}</div>
-      <div className="flex items-end justify-between">
-        <div className={`bg-gradient-to-br ${color} bg-clip-text text-transparent text-2xl font-extrabold`}>${'{'}value.toLocaleString(){'}'}</div>
-        {onAdd && (
-          <Button size="icon" variant="ghost" onClick={onAdd}>
-            <Plus />
-          </Button>
-        )}
-      </div>
-    </div>
-  );
-}
-
-function AddMember({ onAdded }: { onAdded: () => void }) {
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [role, setRole] = useState<"scrapper" | "seller">("seller");
-
-  return (
-    <div className="flex items-center gap-2">
-      <Input placeholder="Name" value={name} onChange={(e) => setName(e.target.value)} />
-      <Input placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} />
-      <select className="h-10 rounded-md border bg-background px-2" value={role} onChange={(e) => setRole(e.target.value as any)}>
-        <option value="seller">Seller</option>
-        <option value="scrapper">Scrapper</option>
-      </select>
-      <Button onClick={() => {
-        const current = JSON.parse(localStorage.getItem("current_user")||"null");
-        adminCreateMember(current, { name, email, role });
-        setName(""); setEmail("");
-        onAdded();
-      }}>
-        Add
-      </Button>
-    </div>
-  );
-}
-
-function AdminPanel({ onChange }: { onChange: () => void }) {
-  return (
-    <div className="space-y-4">
-      <h2 className="text-2xl font-bold">Admin Controls</h2>
-      <p className="text-muted-foreground">Create, remove, or block team accounts. Only the admin can see this panel.</p>
-      <Team users={getUsers()} onChange={onChange} canManage />
-    </div>
-  );
-}
-
 function TeamChat() {
   const [messages, setMessages] = useState<string[]>(() => {
     const raw = localStorage.getItem("team_chat");
-    return raw ? (JSON.parse(raw) as string[]) : [
-      "Welcome to Team Chat!",
-    ];
+    return raw ? (JSON.parse(raw) as string[]) : ["Welcome to Team Chat!"];
   });
   const [input, setInput] = useState("");
   const { user } = useAuth();
-
   const send = () => {
     if (!input.trim()) return;
-    const next = [...messages, `${user?.name ?? "Anon"}: ${input.trim()}`];
+    const next = [...messages, `${user?.name ?? "User"}: ${input.trim()}`];
     setMessages(next);
     localStorage.setItem("team_chat", JSON.stringify(next));
     setInput("");
   };
-
   return (
     <div className="grid h-[60vh] grid-rows-[1fr_auto] rounded-lg border overflow-hidden">
       <div className="space-y-2 p-4 overflow-y-auto bg-gradient-to-b from-background to-background/60">
@@ -291,6 +341,38 @@ function TeamChat() {
         <Input placeholder="Type message" value={input} onChange={(e) => setInput(e.target.value)} onKeyDown={(e) => e.key === "Enter" && send()} />
         <Button onClick={send}><MessageCircle className="mr-1" /> Send</Button>
       </div>
+    </div>
+  );
+}
+
+function NumberSorter() {
+  const [raw, setRaw] = useState("");
+  const nums = raw
+    .split(/\s|,|\n|\r|\t/g)
+    .map((n) => Number(n))
+    .filter((n) => !Number.isNaN(n));
+  const sorted = [...nums].sort((a, b) => a - b);
+  return (
+    <div className="grid gap-4 md:grid-cols-2">
+      <div>
+        <h2 className="text-xl font-semibold mb-2">Input Numbers</h2>
+        <Textarea placeholder="Enter numbers separated by comma or space" value={raw} onChange={(e) => setRaw(e.target.value)} />
+      </div>
+      <div>
+        <h2 className="text-xl font-semibold mb-2">Sorted Result</h2>
+        <div className="rounded-lg border p-3 min-h-[80px] text-sm">
+          {sorted.join(", ")}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function Settings() {
+  return (
+    <div className="space-y-2">
+      <h2 className="text-2xl font-bold">Settings</h2>
+      <p className="text-muted-foreground">Personalize your workspace. More options coming soon.</p>
     </div>
   );
 }
