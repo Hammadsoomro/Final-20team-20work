@@ -5,6 +5,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Input } from "@/components/ui/input";
 import { signup, login } from "@/lib/auth";
 import { useAuth } from "@/context/AuthContext";
+import SiteFooter from "@/components/Footer";
 
 export default function Index() {
   const navigate = useNavigate();
