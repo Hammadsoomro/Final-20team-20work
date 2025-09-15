@@ -129,7 +129,7 @@ function Overview({ users, todaySales, monthSales, crown }: { users: User[]; tod
           <CardTitle>Today Sales</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="text-4xl font-extrabold">${'{'}todaySales.toLocaleString(){'}'}</div>
+          <div className="text-4xl font-extrabold">{todaySales.toLocaleString()}</div>
         </CardContent>
       </Card>
       <Card className="bg-gradient-to-br from-cyan-400 to-blue-500 text-white">
@@ -137,7 +137,7 @@ function Overview({ users, todaySales, monthSales, crown }: { users: User[]; tod
           <CardTitle>Monthly Sales</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="text-4xl font-extrabold">${'{'}monthSales.toLocaleString(){'}'}</div>
+          <div className="text-4xl font-extrabold">{monthSales.toLocaleString()}</div>
         </CardContent>
       </Card>
       <Card>
@@ -145,7 +145,7 @@ function Overview({ users, todaySales, monthSales, crown }: { users: User[]; tod
           <CardTitle>Active Members</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="text-4xl font-extrabold">${'{'}users.filter((u) => !u.blocked).length{'}'}</div>
+          <div className="text-4xl font-extrabold">{users.filter((u) => !u.blocked).length}</div>
         </CardContent>
       </Card>
       <Card className="relative overflow-hidden">
@@ -160,7 +160,7 @@ function Overview({ users, todaySales, monthSales, crown }: { users: User[]; tod
                 <div className="font-semibold">{crown.name}</div>
                 <div className="text-sm text-muted-foreground">{crown.role.toUpperCase()}</div>
               </div>
-              <div className="text-2xl font-bold">${'{'}(crown.salesMonth ?? 0).toLocaleString(){'}'}</div>
+              <div className="text-2xl font-bold">{(crown.salesMonth ?? 0).toLocaleString()}</div>
             </div>
           ) : (
             <div className="text-muted-foreground">No seller yet</div>
