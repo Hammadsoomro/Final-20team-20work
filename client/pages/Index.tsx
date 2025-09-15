@@ -33,34 +33,65 @@ export default function Index() {
         </nav>
       </header>
 
-      <main className="relative z-10 container py-20 text-white">
-        <div className="grid items-center gap-10 md:grid-cols-2">
-          <div>
-            <h1 className="text-5xl md:text-6xl font-extrabold leading-tight drop-shadow-lg">
-              Team-Work — Modern, Animated Dashboard Suite
-            </h1>
-            <p className="mt-4 max-w-xl text-white/90">
-              Collaborate. Sell. Succeed. Create an account or sign in to access a powerful dashboard with a collapsible sidebar, vibrant quick styles, sales analytics, and team chat.
-            </p>
-            <div className="mt-8 flex gap-3">
-              <Button size="lg" onClick={() => setSignupOpen(true)}>Start as Admin</Button>
-              <Button size="lg" variant="secondary" onClick={() => setLoginOpen(true)}>Login</Button>
-            </div>
-            <div className="mt-6 text-sm text-white/80">The first account to sign up becomes the Admin. Only Admins can see the Admin Panel.</div>
-          </div>
-          <div className="relative">
-            <div className="relative rounded-2xl border border-white/20 bg-white/10 p-4 shadow-2xl backdrop-blur">
-              <div className="grid grid-cols-3 gap-3">
-                <div className="h-24 rounded-xl bg-gradient-to-br from-indigo-500 to-emerald-500" />
-                <div className="h-24 rounded-xl bg-gradient-to-br from-cyan-400 to-blue-500" />
-                <div className="h-24 rounded-xl bg-gradient-to-br from-amber-400 to-yellow-500" />
-                <div className="col-span-3 h-36 rounded-xl bg-white/20" />
+      <main className="relative z-10 text-white">
+        <section className="container py-24">
+          <div className="grid items-center gap-12 md:grid-cols-2">
+            <div>
+              <h1 className="text-5xl md:text-6xl font-extrabold leading-tight drop-shadow-lg">
+                Team-Work — Modern, Animated Dashboard Suite
+              </h1>
+              <p className="mt-4 max-w-xl text-white/90">
+                Collaborate. Sell. Succeed. Create an account or sign in to access a powerful dashboard with a collapsible sidebar, vibrant quick styles, sales analytics, and team chat.
+              </p>
+              <div className="mt-8 flex gap-3">
+                <Button size="lg" onClick={() => setSignupOpen(true)}>Start as Admin</Button>
+                <Button size="lg" variant="secondary" onClick={() => setLoginOpen(true)}>Login</Button>
               </div>
-              <div className="absolute -right-6 -top-6 size-20 rounded-full bg-white/30 blur-2xl" />
+              <div className="mt-6 text-sm text-white/80">The first account to sign up becomes the Admin. Only Admins can see the Admin Panel.</div>
+            </div>
+            <div className="relative">
+              <div className="relative rounded-2xl border border-white/20 bg-white/10 p-4 shadow-2xl backdrop-blur">
+                <div className="grid grid-cols-3 gap-3">
+                  <div className="h-24 rounded-xl bg-gradient-to-br from-indigo-500 to-emerald-500" />
+                  <div className="h-24 rounded-xl bg-gradient-to-br from-cyan-400 to-blue-500" />
+                  <div className="h-24 rounded-xl bg-gradient-to-br from-amber-400 to-yellow-500" />
+                  <div className="col-span-3 h-36 rounded-xl bg-white/20" />
+                </div>
+                <div className="absolute -right-6 -top-6 size-20 rounded-full bg-white/30 blur-2xl" />
+              </div>
             </div>
           </div>
-        </div>
+        </section>
+
+        <section className="container py-16">
+          <div className="grid gap-6 md:grid-cols-3">
+            <Feature title="Colorful Analytics" desc="Vibrant, at-a-glance metrics with gradients and motion." />
+            <Feature title="Collapsible Sidebar" desc="Fast, keyboard-friendly navigation with quick actions." />
+            <Feature title="Role-based Access" desc="Admin, Scrapper, Seller permissions baked-in from day one." />
+          </div>
+        </section>
+
+        <section className="container py-16">
+          <div className="grid items-center gap-8 md:grid-cols-3">
+            <Stat value="10k+" label="Transactions/day" />
+            <Stat value="2.5x" label="Faster onboarding" />
+            <Stat value="99.9%" label="Uptime target" />
+          </div>
+        </section>
+
+        <section className="container py-20">
+          <div className="rounded-2xl border border-white/20 bg-white/5 p-8 backdrop-blur">
+            <h2 className="text-3xl font-bold">Built for modern teams</h2>
+            <p className="mt-2 max-w-2xl text-white/90">A clean, latest layout with smooth micro‑interactions and a premium feel. Start as Admin and invite your team in minutes.</p>
+            <div className="mt-6 flex gap-3">
+              <Button onClick={() => setSignupOpen(true)}>Create free account</Button>
+              <Button variant="secondary" onClick={() => setLoginOpen(true)}>Sign in</Button>
+            </div>
+          </div>
+        </section>
       </main>
+
+      <SiteFooter />
 
       <AuthModals
         loginOpen={loginOpen}
@@ -69,6 +100,25 @@ export default function Index() {
         setSignupOpen={setSignupOpen}
         onSuccess={(u) => { setUser(u); navigate("/app"); }}
       />
+    </div>
+  );
+}
+
+function Feature({ title, desc }: { title: string; desc: string }) {
+  return (
+    <div className="rounded-xl border border-white/20 bg-white/10 p-6 backdrop-blur">
+      <div className="h-10 w-10 rounded-md bg-gradient-to-br from-indigo-500 to-emerald-500" />
+      <h3 className="mt-4 text-xl font-semibold">{title}</h3>
+      <p className="mt-1 text-sm text-white/90">{desc}</p>
+    </div>
+  );
+}
+
+function Stat({ value, label }: { value: string; label: string }) {
+  return (
+    <div className="rounded-xl border border-white/20 bg-white/10 p-6 text-center backdrop-blur">
+      <div className="text-4xl font-extrabold">{value}</div>
+      <div className="mt-1 text-sm text-white/90">{label}</div>
     </div>
   );
 }
