@@ -37,7 +37,7 @@ export default function Sales() {
     (u) => u.name.toLowerCase().includes(filter.toLowerCase()) || u.email.toLowerCase().includes(filter.toLowerCase()),
   );
 
-  const canAdjust = true; // Layout guards roles for visibility; server will validate
+  const canAdjust = user?.role !== "seller";
 
   return (
     <div className="space-y-4">
