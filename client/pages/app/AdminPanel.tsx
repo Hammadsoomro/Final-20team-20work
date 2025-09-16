@@ -15,6 +15,7 @@ export default function AdminPanel() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [role, setRole] = useState<"scrapper" | "seller">("seller");
+  const [password, setPassword] = useState("");
 
   useEffect(() => {
     (async () => setUsers(await getUsers()))();
