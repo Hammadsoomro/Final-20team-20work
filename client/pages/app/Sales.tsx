@@ -1,116 +1,218 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { User, addSales, getUsers } from "@/lib/auth";
+import { useAuth } from "@/context/AuthContext";
+import { User, addSales, getUsers, topSeller } from "@/lib/auth";
 
-function Metric({
-  label,
-  value,
-  color,
-  onAdd,
-}: {
-  label: string;
-  value: number;
-  color: string;
-  onAdd?: () => void;
-}) {
+function Metric({ label, value, color }: { label: string; value: number; color: string }) {
   return (
-    <div className="rounded-lg border p-3">
+    <div className="rounded-lg p-4 bg-white shadow-sm">
       <div className="text-xs text-muted-foreground">{label}</div>
-      <div className="flex items-end justify-between">
-        <div
-          className={`bg-gradient-to-br ${color} bg-clip-text text-transparent text-2xl font-extrabold`}
-        >
-          {value.toLocaleString()}
-        </div>
-        {onAdd && (
-          <Button size="icon" variant="ghost" onClick={onAdd}>
-            +
-          </Button>
-        )}
+      <div className="mt-2 text-2xl font-extrabold" style={{ background: "none" }}>
+        {value.toLocaleString()}
       </div>
     </div>
   );
 }
 
-import { useAuth } from "@/context/AuthContext";
-
 export default function Sales() {
+  const { user } = useAuth();
   const [users, setUsers] = useState<User[]>([]);
   const [filter, setFilter] = useState("");
-  const { user } = useAuth();
+  const [editing, setEditing] = useState<string | null>(null);
+  const [todayDelta, setTodayDelta] = useState<number>(0);
+  const [monthDelta, setMonthDelta] = useState<number>(0);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    (async () => setUsers(await getUsers()))();
+    refresh();
   }, []);
 
-  const refresh = async () => setUsers(await getUsers());
+  async function refresh() {
+    const list = await getUsers();
+    setUsers(list);
+  }
 
-  const list = users.filter(
-    (u) =>
-      u.name.toLowerCase().includes(filter.toLowerCase()) ||
-      u.email.toLowerCase().includes(filter.toLowerCase()),
-  );
+  const list = useMemo(() => {
+    return users.filter((u) =>
+      u.name.toLowerCase().includes(filter.toLowerCase()) || u.email.toLowerCase().includes(filter.toLowerCase()),
+    );
+  }, [users, filter]);
+
+  const totals = useMemo(() => {
+    const today = users.reduce((s, u) => s + (u.salesToday ?? 0), 0);
+    const month = users.reduce((s, u) => s + (u.salesMonth ?? 0), 0);
+    const members = users.filter((u) => !u.blocked).length;
+    return { today, month, members };
+  }, [users]);
+
+  const top = useMemo(() => {
+    return users.length ? topSeller().catch(() => null) : Promise.resolve(null);
+  }, [users]);
 
   const canAdjust = user?.role !== "seller";
 
+  async function handleSaveEdit(targetId: string) {
+    setLoading(true);
+    try {
+      // call addSales with deltas (can be negative to reset)
+      await addSales(targetId, Number(todayDelta || 0), Number(monthDelta || 0));
+      await refresh();
+      setEditing(null);
+      setTodayDelta(0);
+      setMonthDelta(0);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function handleResetMonth() {
+    if (!canAdjust) return;
+    setLoading(true);
+    try {
+      // For each user, subtract their current salesMonth to reset to 0
+      await Promise.all(
+        users.map((u) => {
+          const m = u.salesMonth ?? 0;
+          if (m === 0) return Promise.resolve(null);
+          return addSales(u.id, 0, -m);
+        }),
+      );
+      await refresh();
+    } finally {
+      setLoading(false);
+    }
+  }
+
   return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between gap-2">
-        <Input
-          placeholder="Search team"
-          value={filter}
-          onChange={(e) => setFilter(e.target.value)}
-        />
-      </div>
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        {list.map((m) => (
-          <Card key={m.id} className={m.blocked ? "opacity-60" : ""}>
-            <CardHeader>
-              <CardTitle className="flex items-center justify-between">
-                <span className="truncate">{m.name}</span>
-                <span className="text-xs rounded-full px-2 py-0.5 bg-secondary">
-                  {m.role}
-                </span>
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-sm text-muted-foreground truncate">
-                {m.email}
+    <div className="space-y-6">
+      <header className="flex items-start justify-between gap-4">
+        <div>
+          <div className="inline-flex items-center gap-3">
+            <div className="h-10 w-10 rounded-md bg-gradient-to-br from-indigo-600 to-purple-600 flex items-center justify-center text-white font-bold">TR</div>
+            <div>
+              <h2 className="text-2xl font-bold">Sales Tracker</h2>
+              <p className="text-sm text-muted-foreground">Track team sales performance by category</p>
+            </div>
+          </div>
+        </div>
+        <div className="flex items-center gap-3">
+          <div className="text-sm text-muted-foreground">
+            Current Month: {new Date().toLocaleString(undefined, { month: "long", year: "numeric" })}
+          </div>
+          <Button onClick={refresh} variant="outline">Refresh</Button>
+          <Button onClick={handleResetMonth} disabled={!canAdjust || loading} className="bg-orange-600 text-white">
+            Reset Month
+          </Button>
+        </div>
+      </header>
+
+      <section className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <Metric label="Today's Sales" value={totals.today} color="indigo" />
+        <Metric label="Monthly Total" value={totals.month} color="green" />
+        <Metric label="Team Members" value={totals.members} color="purple" />
+        <div className="rounded-lg p-4 bg-white shadow-sm">
+          <div className="text-xs text-muted-foreground">Top Seller</div>
+          <div className="mt-2 text-lg font-semibold">
+            {/* show top seller name or none */}
+            {(users.length && (users.reduce((a, b) => (a.salesMonth! >= b.salesMonth! ? a : b)).name as string)) || "None"}
+          </div>
+          <div className="text-sm text-muted-foreground">{users.length ? `${users.reduce((a, b) => (a.salesMonth! >= b.salesMonth! ? a : b)).salesMonth ?? 0} sales` : "0 sales"}</div>
+        </div>
+      </section>
+
+      <section>
+        <div className="bg-white rounded-lg shadow">
+          <div className="p-4 border-b">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Input placeholder="Search team" value={filter} onChange={(e) => setFilter(e.target.value)} />
               </div>
-              <div className="mt-3 grid grid-cols-2 gap-3">
-                <Metric
-                  label="Today"
-                  value={m.salesToday ?? 0}
-                  color="from-indigo-500 to-emerald-500"
-                  onAdd={
-                    canAdjust
-                      ? async () => {
-                          await addSales(m.id, 50, 0);
-                          await refresh();
-                        }
-                      : undefined
-                  }
-                />
-                <Metric
-                  label="Month"
-                  value={m.salesMonth ?? 0}
-                  color="from-cyan-400 to-blue-500"
-                  onAdd={
-                    canAdjust
-                      ? async () => {
-                          await addSales(m.id, 0, 250);
-                          await refresh();
-                        }
-                      : undefined
-                  }
-                />
+            </div>
+          </div>
+
+          <div className="overflow-x-auto">
+            <table className="w-full table-auto">
+              <thead className="bg-slate-50 text-left text-xs text-muted-foreground uppercase">
+                <tr>
+                  <th className="px-4 py-3">Team Member</th>
+                  <th className="px-4 py-3">Role</th>
+                  <th className="px-4 py-3">Today's Sales</th>
+                  <th className="px-4 py-3">Monthly Total</th>
+                  <th className="px-4 py-3">Sales Categories</th>
+                  <th className="px-4 py-3">Last Updated</th>
+                  <th className="px-4 py-3">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="bg-white">
+                {list.map((m) => (
+                  <tr key={m.id} className={m.blocked ? "opacity-60" : ""}>
+                    <td className="px-4 py-4 align-top">
+                      <div className="flex items-center gap-3">
+                        <div className="h-8 w-8 rounded-md bg-gradient-to-br from-indigo-600 to-purple-600 flex items-center justify-center text-white font-semibold">{m.name?.charAt(0) ?? "U"}</div>
+                        <div>
+                          <div className="font-medium">{m.name}</div>
+                          <div className="text-xs text-muted-foreground">{m.email}</div>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-4 py-4 align-top">
+                      <span className="inline-block rounded-full px-2 py-0.5 text-xs bg-gray-100">{m.role}</span>
+                    </td>
+                    <td className="px-4 py-4 align-top">{m.salesToday ?? 0}</td>
+                    <td className="px-4 py-4 align-top">{m.salesMonth ?? 0}</td>
+                    <td className="px-4 py-4 align-top">
+                      <div className="text-sm text-muted-foreground">{m.salesMonth ? "—" : "No sales yet"}</div>
+                    </td>
+                    <td className="px-4 py-4 align-top">{m.createdAt ? new Date(m.createdAt).toLocaleDateString() : "Never"}</td>
+                    <td className="px-4 py-4 align-top">
+                      <div className="flex items-center gap-2">
+                        {canAdjust && (
+                          <Button size="sm" variant="ghost" onClick={() => { setEditing(m.id); setTodayDelta(0); setMonthDelta(0); }}>
+                            Edit
+                          </Button>
+                        )}
+                        {canAdjust && <Button size="sm" variant="ghost" onClick={async () => { await addSales(m.id, 50, 50); await refresh(); }}>+50</Button>}
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      {editing && (
+        <div className="fixed inset-0 z-50 flex items-end justify-center p-4">
+          <div className="w-full max-w-xl rounded-t-lg bg-white shadow-lg">
+            <div className="p-4 border-b flex items-center justify-between">
+              <div>
+                <h3 className="text-lg font-semibold">Edit sales</h3>
+                <p className="text-sm text-muted-foreground">Adjust today's or monthly totals for the user</p>
               </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+              <div>
+                <Button variant="ghost" onClick={() => setEditing(null)}>Close</Button>
+              </div>
+            </div>
+            <div className="p-4 grid grid-cols-1 gap-3">
+              <div>
+                <label className="text-sm">Add to Today (positive or negative)</label>
+                <Input type="number" value={String(todayDelta)} onChange={(e) => setTodayDelta(Number(e.target.value))} />
+              </div>
+              <div>
+                <label className="text-sm">Add to Month (positive or negative)</label>
+                <Input type="number" value={String(monthDelta)} onChange={(e) => setMonthDelta(Number(e.target.value))} />
+              </div>
+              <div className="flex gap-2 justify-end">
+                <Button variant="secondary" onClick={() => setEditing(null)}>Cancel</Button>
+                <Button onClick={() => handleSaveEdit(editing)} disabled={loading}>{loading ? "Saving..." : "Save changes"}</Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
