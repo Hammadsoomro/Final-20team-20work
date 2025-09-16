@@ -56,7 +56,11 @@ export default function Dashboard() {
     })();
   }, [user, navigate]);
 
-  const crown = useMemo(() => topSeller(), [users]);
+  const crown = useMemo(() => {
+    const active = users.filter((u) => !u.blocked);
+    if (!active.length) return null;
+    return active.reduce((a, b) => (a.salesMonth! >= b.salesMonth! ? a : b));
+  }, [users]);
   const todaySales = useMemo(() => users.reduce((s, u) => s + (u.salesToday || 0), 0), [users]);
   const monthSales = useMemo(
     () => users.reduce((s, u) => s + (u.salesMonth || 0), 0),
