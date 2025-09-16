@@ -5,6 +5,13 @@ import { Card } from "@/components/ui/card";
 import { useAuth } from "@/context/AuthContext";
 import { getUsers, User } from "@/lib/auth";
 import { getSocket } from "@/lib/socket";
+import {
+  clearUnread,
+  dmRoom as dmRoomKey,
+  getUnread,
+  incUnread,
+  onUnreadChange,
+} from "@/lib/chatState";
 
 type Message = {
   roomId: string;
@@ -25,6 +32,7 @@ export default function TeamChat() {
   const [input, setInput] = useState("");
   const audioRef = useRef<AudioContext | null>(null);
   const listRef = useRef<HTMLDivElement>(null);
+  const [unreadTick, setUnreadTick] = useState(0);
 
   const socket = useMemo(() => (user ? getSocket(user.id) : null), [user?.id]);
 
@@ -41,7 +49,13 @@ export default function TeamChat() {
       const isCurrent =
         (activeRoom.type === "team" && msg.roomId === "team") ||
         (activeRoom.type === "dm" && msg.roomId === activeRoom.roomId);
-      if (isCurrent) setMessages((m) => [...m, msg]);
+      if (isCurrent) {
+        setMessages((m) => [...m, msg]);
+        scrollToBottom();
+      } else {
+        incUnread(msg.roomId);
+        setUnreadTick((t) => t + 1);
+      }
       playBeep();
     };
 
@@ -83,6 +97,11 @@ export default function TeamChat() {
     })();
   }, [activeRoom, user]);
 
+  useEffect(() => {
+    const off = onUnreadChange(() => setUnreadTick((t) => t + 1));
+    return () => off();
+  }, []);
+
   const filtered = contacts.filter(
     (u) =>
       u.id !== user?.id &&
@@ -103,6 +122,8 @@ export default function TeamChat() {
   }
 
   async function selectTeam() {
+    clearUnread("team");
+    setUnreadTick((t) => t + 1);
     setActiveRoom({ type: "team" });
   }
 
@@ -111,6 +132,8 @@ export default function TeamChat() {
     const r = await fetch(`/api/chat/dm/${user.id}/${targetId}`);
     const data = (await r.json()) as { roomId: string };
     socket?.emit("chat:join", { roomId: data.roomId });
+    clearUnread(data.roomId);
+    setUnreadTick((t) => t + 1);
     setActiveRoom({ type: "dm", userId: targetId, roomId: data.roomId });
   }
 
@@ -188,7 +211,7 @@ export default function TeamChat() {
         </div>
         <div className="border-b p-2">
           <Button
-            className="w-full justify-start bg-gradient-to-r from-indigo-600 to-purple-600 text-white"
+            className="w-full justify-start bg-gradient-to-r from-indigo-600 to-purple-600 text-white relative"
             onClick={selectTeam}
           >
             <div className="mr-2 inline-flex h-10 w-10 items-center justify-center rounded-full bg-white/20">
@@ -206,6 +229,11 @@ export default function TeamChat() {
               <div className="font-medium">Team Chat</div>
               <div className="text-xs text-indigo-100">Everyone can see</div>
             </div>
+            {getUnread("team") > 0 && (
+              <span className="absolute right-3 top-2 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-red-500 px-1 text-[10px] text-white">
+                {getUnread("team")}
+              </span>
+            )}
           </Button>
         </div>
         <div className="h-[44vh] overflow-y-auto p-2">
@@ -242,8 +270,13 @@ export default function TeamChat() {
                       {c.role}
                     </span>
                   </div>
-                  <div className="truncate text-xs text-gray-500">
-                    {c.email}
+                  <div className="flex items-center justify-between">
+                    <div className="truncate text-xs text-gray-500">{c.email}</div>
+                    {user && getUnread(dmRoomKey(user.id, c.id)) > 0 && (
+                      <span className="ml-2 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-red-500 px-1 text-[10px] text-white">
+                        {getUnread(dmRoomKey(user.id, c.id))}
+                      </span>
+                    )}
                   </div>
                 </div>
               </div>
