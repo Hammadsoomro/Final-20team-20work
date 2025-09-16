@@ -156,10 +156,10 @@ function LoginForm({ onSuccess }: { onSuccess: (u: any) => void }) {
   return (
     <form
       className="space-y-3"
-      onSubmit={(e) => {
+      onSubmit={async (e) => {
         e.preventDefault();
         try {
-          const u = login(email, password);
+          const u = await login(email, password);
           onSuccess(u);
         } catch (err: any) {
           setError(err.message || "Login failed");
@@ -175,26 +175,40 @@ function LoginForm({ onSuccess }: { onSuccess: (u: any) => void }) {
 }
 
 function SignupForm({ onSuccess }: { onSuccess: (u: any) => void }) {
-  const [name, setName] = useState("");
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirm, setConfirm] = useState("");
   const [error, setError] = useState("");
   return (
     <form
       className="space-y-3"
-      onSubmit={(e) => {
+      onSubmit={async (e) => {
         e.preventDefault();
+        if (password !== confirm) {
+          setError("Passwords do not match");
+          return;
+        }
         try {
-          const u = signup(name, email, password);
+          const u = await signupFull(firstName, lastName, phone, email, password);
           onSuccess(u);
         } catch (err: any) {
           setError(err.message || "Signup failed");
         }
       }}
     >
-      <Input placeholder="Full name" value={name} onChange={(e) => setName(e.target.value)} required />
+      <div className="grid grid-cols-2 gap-2">
+        <Input placeholder="First name" value={firstName} onChange={(e) => setFirstName(e.target.value)} required />
+        <Input placeholder="Last name" value={lastName} onChange={(e) => setLastName(e.target.value)} required />
+      </div>
+      <Input placeholder="Phone number" value={phone} onChange={(e) => setPhone(e.target.value)} required />
       <Input placeholder="Email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
-      <Input placeholder="Password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} required />
+      <div className="grid grid-cols-2 gap-2">
+        <Input placeholder="Password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} required />
+        <Input placeholder="Confirm password" type="password" value={confirm} onChange={(e) => setConfirm(e.target.value)} required />
+      </div>
       {error && <div className="text-sm text-destructive">{error}</div>}
       <Button type="submit" className="w-full">Create Account</Button>
     </form>
