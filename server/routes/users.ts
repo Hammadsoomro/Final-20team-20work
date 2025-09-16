@@ -64,7 +64,8 @@ export const login: RequestHandler = async (req, res) => {
 
 export const listUsers: RequestHandler = async (req, res) => {
   const col = await usersCol();
-  const ownerId = typeof req.query.ownerId === "string" ? req.query.ownerId : undefined;
+  const ownerId =
+    typeof req.query.ownerId === "string" ? req.query.ownerId : undefined;
   const filter = ownerId ? { ownerId } : {};
   const list = await col
     .find(filter, { projection: { passwordHash: 0 } })

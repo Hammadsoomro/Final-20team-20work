@@ -115,7 +115,9 @@ export async function getUsers(): Promise<User[]> {
   try {
     const current = getCurrentUser();
     const ownerId = current?.ownerId || current?.id;
-    const url = ownerId ? `/api/users?ownerId=${encodeURIComponent(ownerId)}` : "/api/users";
+    const url = ownerId
+      ? `/api/users?ownerId=${encodeURIComponent(ownerId)}`
+      : "/api/users";
     return await api<User[]>(url);
   } catch {
     const current = getCurrentUser();
