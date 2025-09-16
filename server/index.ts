@@ -39,7 +39,7 @@ export async function createServer() {
   app.post("/api/users/:id/sales", addSalesApi);
 
   // Chat & Presence
-  async chat = await import("./routes/chat");
+  const chat = await import("./routes/chat");
   app.get("/api/chat/:roomId/messages", chat.listMessages);
   app.post("/api/chat/:roomId/messages", chat.postMessage);
   app.get("/api/chat/dm/:a/:b", chat.getDmRoomId);
