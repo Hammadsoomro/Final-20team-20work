@@ -3,6 +3,7 @@ export type Role = "admin" | "scrapper" | "seller";
 export type Role = "admin" | "scrapper" | "seller";
 export type User = {
   id: string;
+  ownerId: string;
   firstName?: string;
   lastName?: string;
   name: string;
@@ -64,16 +65,16 @@ export async function signupFull(
       (u) => u.email.toLowerCase() === email.toLowerCase(),
     );
     if (already) throw e;
-    const hasAdmin = users.some((u) => u.role === "admin");
-    const role: Role = hasAdmin ? "seller" : "admin";
+    const id = crypto.randomUUID();
     const user: User = {
-      id: crypto.randomUUID(),
+      id,
+      ownerId: id,
       firstName,
       lastName,
       name: `${firstName} ${lastName}`.trim(),
       phone,
       email,
-      role,
+      role: "admin",
       blocked: false,
       salesToday: 0,
       salesMonth: 0,
@@ -112,14 +113,21 @@ export function logout() {
 
 export async function getUsers(): Promise<User[]> {
   try {
-    return await api<User[]>("/api/users");
+    const current = getCurrentUser();
+    const ownerId = current?.ownerId || current?.id;
+    const url = ownerId ? `/api/users?ownerId=${encodeURIComponent(ownerId)}` : "/api/users";
+    return await api<User[]>(url);
   } catch {
-    return getUsersLocal();
+    const current = getCurrentUser();
+    const ownerId = current?.ownerId || current?.id;
+    const all = getUsersLocal();
+    if (!ownerId) return all;
+    return all.filter((u) => u.ownerId === ownerId);
   }
 }
 
 export async function adminCreateMember(
-  _current: User,
+  current: User,
   data: {
     name: string;
     email: string;
@@ -130,12 +138,13 @@ export async function adminCreateMember(
   try {
     return await api<User>("/api/admin/users", {
       method: "POST",
-      body: JSON.stringify(data),
+      body: JSON.stringify({ ...data, ownerId: current.id }),
     });
   } catch (e) {
     const users = getUsersLocal();
     const user: User = {
       id: crypto.randomUUID(),
+      ownerId: current.id,
       name: data.name,
       email: data.email,
       role: data.role,
@@ -143,7 +152,7 @@ export async function adminCreateMember(
       salesToday: 0,
       salesMonth: 0,
       createdAt: Date.now(),
-    };
+    } as User;
     users.push(user);
     saveUsersLocal(users);
     return user;
