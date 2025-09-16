@@ -38,5 +38,14 @@ export function createServer() {
   app.patch("/api/admin/users/:id/block", toggleBlock);
   app.post("/api/users/:id/sales", addSalesApi);
 
+  // Chat & Presence
+  const chat = await import("./routes/chat");
+  app.get("/api/chat/:roomId/messages", chat.listMessages);
+  app.post("/api/chat/:roomId/messages", chat.postMessage);
+  app.get("/api/chat/dm/:a/:b", chat.getDmRoomId);
+  app.post("/api/presence/heartbeat", chat.heartbeat);
+  app.get("/api/presence/online", chat.listOnline);
+  app.post("/api/distribute", chat.distributeNumbers);
+
   return app;
 }
