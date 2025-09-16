@@ -57,12 +57,18 @@ export default function TeamChat() {
   useEffect(() => {
     if (!user) return;
     (async () => {
-      if (activeRoom.type === "team") {
-        const res = await fetch(`/api/chat/team/messages?limit=200`);
-        setMessages(await res.json());
-      } else {
-        const res = await fetch(`/api/chat/${activeRoom.roomId}/messages?limit=200`);
-        setMessages(await res.json());
+      try {
+        if (activeRoom.type === "team") {
+          const res = await fetch(`/api/chat/team/messages?limit=200`);
+          if (!res.ok) throw new Error("history");
+          setMessages(await res.json());
+        } else {
+          const res = await fetch(`/api/chat/${activeRoom.roomId}/messages?limit=200`);
+          if (!res.ok) throw new Error("history");
+          setMessages(await res.json());
+        }
+      } catch {
+        setMessages([]);
       }
       scrollToBottom();
     })();
