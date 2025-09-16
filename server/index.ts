@@ -2,6 +2,15 @@ import "dotenv/config";
 import express from "express";
 import cors from "cors";
 import { handleDemo } from "./routes/demo";
+import {
+  signup as signupRoute,
+  login as loginRoute,
+  listUsers,
+  createMember,
+  removeMember,
+  toggleBlock,
+  addSalesApi,
+} from "./routes/users";
 
 export function createServer() {
   const app = express();
@@ -11,13 +20,23 @@ export function createServer() {
   app.use(express.json());
   app.use(express.urlencoded({ extended: true }));
 
-  // Example API routes
+  // Health
   app.get("/api/ping", (_req, res) => {
     const ping = process.env.PING_MESSAGE ?? "ping";
     res.json({ message: ping });
   });
 
+  // Demo
   app.get("/api/demo", handleDemo);
+
+  // Auth & Users (MongoDB)
+  app.post("/api/auth/signup", signupRoute);
+  app.post("/api/auth/login", loginRoute);
+  app.get("/api/users", listUsers);
+  app.post("/api/admin/users", createMember);
+  app.delete("/api/admin/users/:id", removeMember);
+  app.patch("/api/admin/users/:id/block", toggleBlock);
+  app.post("/api/users/:id/sales", addSalesApi);
 
   return app;
 }
