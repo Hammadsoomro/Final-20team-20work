@@ -40,6 +40,12 @@ export default function AdminPanel() {
           value={email}
           onChange={(e) => setEmail(e.target.value)}
         />
+        <Input
+          placeholder="Password"
+          type="password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+        />
         <select
           className="h-10 rounded-md border bg-background px-2"
           value={role}
@@ -53,9 +59,10 @@ export default function AdminPanel() {
             const current = JSON.parse(
               localStorage.getItem("current_user") || "null",
             );
-            await adminCreateMember(current, { name, email, role });
+            await adminCreateMember(current, { name, email, role, password });
             setName("");
             setEmail("");
+            setPassword("");
             await refresh();
           }}
         >
