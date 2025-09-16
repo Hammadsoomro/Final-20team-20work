@@ -67,7 +67,10 @@ export default function Dashboard() {
     [users],
   );
 
-  const refresh = () => setUsers(getUsers());
+  const refresh = async () => {
+    const list = await getUsers();
+    setUsers(list);
+  };
   const canUseSorter = user?.role === "admin" || user?.role === "scrapper";
 
   return (
