@@ -49,8 +49,11 @@ export default function Dashboard() {
   const [users, setUsers] = useState<User[]>([]);
 
   useEffect(() => {
-    if (!user) navigate("/");
-    setUsers(getUsers());
+    if (!user) { navigate("/"); return; }
+    (async () => {
+      const list = await getUsers();
+      setUsers(list);
+    })();
   }, [user, navigate]);
 
   const crown = useMemo(() => topSeller(), [users]);
