@@ -267,12 +267,12 @@ function Metric({ label, value, color, onAdd }: { label: string; value: number; 
   );
 }
 
-function AdminPanel({ onChange }: { onChange: () => void }) {
+function AdminPanel({ users, onChange }: { users: User[]; onChange: () => void }) {
   return (
     <div className="space-y-4">
       <h2 className="text-2xl font-bold">Admin Controls</h2>
       <p className="text-muted-foreground">Create, remove, or block team accounts.</p>
-      <TeamList users={getUsers()} onChange={onChange} canManage />
+      <TeamList users={users} onChange={onChange} canManage />
     </div>
   );
 }
