@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { signup, login } from "@/lib/auth";
+import { signupFull, login } from "@/lib/auth";
 import { useAuth } from "@/context/AuthContext";
 import SiteFooter from "@/components/Footer";
 
