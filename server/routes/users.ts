@@ -22,17 +22,17 @@ export const signup: RequestHandler = async (req, res) => {
     const col = await usersCol();
     const exists = await col.findOne({ email: body.email.toLowerCase() });
     if (exists) return res.status(400).json({ error: "Email already exists" });
-    const hasAdmin = (await col.countDocuments({ role: "admin" })) > 0;
-    const role = hasAdmin ? ("seller" as const) : ("admin" as const);
+    const id = crypto.randomUUID();
     const user = {
-      id: crypto.randomUUID(),
+      id,
+      ownerId: id,
       firstName: body.firstName,
       lastName: body.lastName,
       name: `${body.firstName} ${body.lastName}`.trim(),
       phone: body.phone,
       email: body.email.toLowerCase(),
       passwordHash: await bcrypt.hash(body.password, 10),
-      role,
+      role: "admin" as const,
       blocked: false,
       salesToday: 0,
       salesMonth: 0,
@@ -52,20 +52,22 @@ export const login: RequestHandler = async (req, res) => {
     const col = await usersCol();
     const u = await col.findOne({ email: body.email.toLowerCase() });
     if (!u) return res.status(400).json({ error: "Invalid credentials" });
-    const ok = await bcrypt.compare(body.password, u.passwordHash);
+    const ok = await bcrypt.compare(body.password, (u as any).passwordHash);
     if (!ok) return res.status(400).json({ error: "Invalid credentials" });
     if (u.blocked) return res.status(403).json({ error: "Account is blocked" });
-    const { passwordHash, ...safe } = u;
+    const { passwordHash, ...safe } = u as any;
     res.json(safe);
   } catch (e: any) {
     res.status(400).json({ error: e.message || "Invalid request" });
   }
 };
 
-export const listUsers: RequestHandler = async (_req, res) => {
+export const listUsers: RequestHandler = async (req, res) => {
   const col = await usersCol();
+  const ownerId = typeof req.query.ownerId === "string" ? req.query.ownerId : undefined;
+  const filter = ownerId ? { ownerId } : {};
   const list = await col
-    .find({}, { projection: { passwordHash: 0 } })
+    .find(filter, { projection: { passwordHash: 0 } })
     .sort({ createdAt: -1 })
     .toArray();
   res.json(list);
@@ -77,14 +79,18 @@ export const createMember: RequestHandler = async (req, res) => {
     email: z.string().email(),
     role: z.enum(["scrapper", "seller"]),
     password: z.string().optional(),
+    ownerId: z.string().min(1),
   });
   try {
     const body = schema.parse(req.body);
     const col = await usersCol();
     const exists = await col.findOne({ email: body.email.toLowerCase() });
     if (exists) return res.status(400).json({ error: "Email already exists" });
+    const admin = await col.findOne({ id: body.ownerId, role: "admin" });
+    if (!admin) return res.status(400).json({ error: "Invalid ownerId" });
     const user = {
       id: crypto.randomUUID(),
+      ownerId: body.ownerId,
       firstName: body.name.split(" ")[0] || body.name,
       lastName: body.name.split(" ").slice(1).join(" ") || "",
       name: body.name,
