@@ -6,6 +6,11 @@ import { Card } from "@/components/ui/card";
 import { useAuth } from "@/context/AuthContext";
 import { getSocket } from "@/lib/socket";
 
+function parseNumberLike(s: string): number | null {
+  const n = Number(s.replace(/[,\s]/g, ""));
+  return Number.isFinite(n) ? n : null;
+}
+
 export default function NumberSorter() {
   const { user } = useAuth();
   const [raw, setRaw] = useState("");
@@ -46,21 +51,28 @@ export default function NumberSorter() {
       .map((s) => s.trim())
       .filter(Boolean);
     const uniq = Array.from(new Set(lines));
+    const sorted = [...uniq].sort((a, b) => {
+      const na = parseNumberLike(a);
+      const nb = parseNumberLike(b);
+      if (na !== null && nb !== null) return na - nb;
+      return a.localeCompare(b);
+    });
     return {
       raw: lines.length,
       unique: uniq.length,
       dup: Math.max(lines.length - uniq.length, 0),
       lines,
       uniq,
+      sorted,
     };
   }, [raw]);
 
   async function addToQueue() {
-    if (!stats.uniq.length) return;
+    if (!stats.sorted.length) return;
     await fetch("/api/sorter", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ lines: stats.uniq }),
+      body: JSON.stringify({ lines: stats.sorted }),
     });
     setRaw("");
   }
@@ -299,13 +311,13 @@ export default function NumberSorter() {
                 <div className="flex-1 overflow-auto">
                   <div className="flex">
                     <div className="w-12 border-r bg-gray-50 p-2 text-right text-xs text-gray-500 font-mono">
-                      {pending.map((_, i) => (
+                      {stats.sorted.map((_, i) => (
                         <div key={i}>{i + 1}</div>
                       ))}
                     </div>
                     <div className="flex-1 p-4 text-sm font-mono">
-                      {pending.length ? (
-                        pending.map((v, i) => (
+                      {stats.sorted.length ? (
+                        stats.sorted.map((v, i) => (
                           <div key={i} className="text-gray-800">
                             {v}
                           </div>
