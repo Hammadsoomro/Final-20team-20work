@@ -241,8 +241,8 @@ function SalesTracker({ users, onChange, canAdjust }: { users: User[]; onChange:
             <CardContent>
               <div className="text-sm text-muted-foreground truncate">{m.email}</div>
               <div className="mt-3 grid grid-cols-2 gap-3">
-                <Metric label="Today" value={m.salesToday ?? 0} color="from-indigo-500 to-emerald-500" onAdd={canAdjust ? () => { addSales(m.id, 50, 0); onChange(); } : undefined} />
-                <Metric label="Month" value={m.salesMonth ?? 0} color="from-cyan-400 to-blue-500" onAdd={canAdjust ? () => { addSales(m.id, 0, 250); onChange(); } : undefined} />
+                <Metric label="Today" value={m.salesToday ?? 0} color="from-indigo-500 to-emerald-500" onAdd={canAdjust ? async () => { await addSales(m.id, 50, 0); await onChange(); } : undefined} />
+                <Metric label="Month" value={m.salesMonth ?? 0} color="from-cyan-400 to-blue-500" onAdd={canAdjust ? async () => { await addSales(m.id, 0, 250); await onChange(); } : undefined} />
               </div>
             </CardContent>
           </Card>
