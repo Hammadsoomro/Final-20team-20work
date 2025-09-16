@@ -1,7 +1,14 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { signupFull, login } from "@/lib/auth";
 import { useAuth } from "@/context/AuthContext";
@@ -25,10 +32,14 @@ export default function Index() {
         <nav className="container flex h-16 items-center justify-between text-white">
           <div className="flex items-center gap-2">
             <div className="size-8 rounded-md bg-white/90" />
-            <div className="text-xl font-extrabold tracking-tight">Team-Work</div>
+            <div className="text-xl font-extrabold tracking-tight">
+              Team-Work
+            </div>
           </div>
           <div className="flex items-center gap-2">
-            <Button variant="secondary" onClick={() => setLoginOpen(true)}>Login</Button>
+            <Button variant="secondary" onClick={() => setLoginOpen(true)}>
+              Login
+            </Button>
             <Button onClick={() => setSignupOpen(true)}>Create Account</Button>
           </div>
         </nav>
@@ -42,13 +53,26 @@ export default function Index() {
                 Team-Work — Modern, Animated Dashboard Suite
               </h1>
               <p className="mt-4 max-w-xl text-white/90">
-                Collaborate. Sell. Succeed. Create an account or sign in to access a powerful dashboard with a collapsible sidebar, vibrant quick styles, sales analytics, and team chat.
+                Collaborate. Sell. Succeed. Create an account or sign in to
+                access a powerful dashboard with a collapsible sidebar, vibrant
+                quick styles, sales analytics, and team chat.
               </p>
               <div className="mt-8 flex gap-3">
-                <Button size="lg" onClick={() => setSignupOpen(true)}>Start as Admin</Button>
-                <Button size="lg" variant="secondary" onClick={() => setLoginOpen(true)}>Login</Button>
+                <Button size="lg" onClick={() => setSignupOpen(true)}>
+                  Start as Admin
+                </Button>
+                <Button
+                  size="lg"
+                  variant="secondary"
+                  onClick={() => setLoginOpen(true)}
+                >
+                  Login
+                </Button>
               </div>
-              <div className="mt-6 text-sm text-white/80">The first account to sign up becomes the Admin. Only Admins can see the Admin Panel.</div>
+              <div className="mt-6 text-sm text-white/80">
+                The first account to sign up becomes the Admin. Only Admins can
+                see the Admin Panel.
+              </div>
             </div>
             <div className="relative">
               <div className="relative rounded-2xl border border-white/20 bg-white/10 p-4 shadow-2xl backdrop-blur">
@@ -66,9 +90,18 @@ export default function Index() {
 
         <section className="container py-16">
           <div className="grid gap-6 md:grid-cols-3">
-            <Feature title="Colorful Analytics" desc="Vibrant, at-a-glance metrics with gradients and motion." />
-            <Feature title="Collapsible Sidebar" desc="Fast, keyboard-friendly navigation with quick actions." />
-            <Feature title="Role-based Access" desc="Admin, Scrapper, Seller permissions baked-in from day one." />
+            <Feature
+              title="Colorful Analytics"
+              desc="Vibrant, at-a-glance metrics with gradients and motion."
+            />
+            <Feature
+              title="Collapsible Sidebar"
+              desc="Fast, keyboard-friendly navigation with quick actions."
+            />
+            <Feature
+              title="Role-based Access"
+              desc="Admin, Scrapper, Seller permissions baked-in from day one."
+            />
           </div>
         </section>
 
@@ -83,10 +116,17 @@ export default function Index() {
         <section className="container py-20">
           <div className="rounded-2xl border border-white/20 bg-white/5 p-8 backdrop-blur">
             <h2 className="text-3xl font-bold">Built for modern teams</h2>
-            <p className="mt-2 max-w-2xl text-white/90">A clean, latest layout with smooth micro‑interactions and a premium feel. Start as Admin and invite your team in minutes.</p>
+            <p className="mt-2 max-w-2xl text-white/90">
+              A clean, latest layout with smooth micro‑interactions and a
+              premium feel. Start as Admin and invite your team in minutes.
+            </p>
             <div className="mt-6 flex gap-3">
-              <Button onClick={() => setSignupOpen(true)}>Create free account</Button>
-              <Button variant="secondary" onClick={() => setLoginOpen(true)}>Sign in</Button>
+              <Button onClick={() => setSignupOpen(true)}>
+                Create free account
+              </Button>
+              <Button variant="secondary" onClick={() => setLoginOpen(true)}>
+                Sign in
+              </Button>
             </div>
           </div>
         </section>
@@ -99,7 +139,10 @@ export default function Index() {
         setLoginOpen={setLoginOpen}
         signupOpen={signupOpen}
         setSignupOpen={setSignupOpen}
-        onSuccess={(u) => { setUser(u); navigate("/app"); }}
+        onSuccess={(u) => {
+          setUser(u);
+          navigate("/app");
+        }}
       />
     </div>
   );
@@ -124,25 +167,51 @@ function Stat({ value, label }: { value: string; label: string }) {
   );
 }
 
-function AuthModals({ loginOpen, setLoginOpen, signupOpen, setSignupOpen, onSuccess }: { loginOpen: boolean; setLoginOpen: (v: boolean) => void; signupOpen: boolean; setSignupOpen: (v: boolean) => void; onSuccess: (u: any) => void; }) {
+function AuthModals({
+  loginOpen,
+  setLoginOpen,
+  signupOpen,
+  setSignupOpen,
+  onSuccess,
+}: {
+  loginOpen: boolean;
+  setLoginOpen: (v: boolean) => void;
+  signupOpen: boolean;
+  setSignupOpen: (v: boolean) => void;
+  onSuccess: (u: any) => void;
+}) {
   return (
     <>
       <Dialog open={loginOpen} onOpenChange={setLoginOpen}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Login</DialogTitle>
-            <DialogDescription>After login, the dashboard will be shown.</DialogDescription>
+            <DialogDescription>
+              After login, the dashboard will be shown.
+            </DialogDescription>
           </DialogHeader>
-          <LoginForm onSuccess={(u) => { setLoginOpen(false); onSuccess(u); }} />
+          <LoginForm
+            onSuccess={(u) => {
+              setLoginOpen(false);
+              onSuccess(u);
+            }}
+          />
         </DialogContent>
       </Dialog>
       <Dialog open={signupOpen} onOpenChange={setSignupOpen}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Create Account</DialogTitle>
-            <DialogDescription>The first account to sign up becomes the Admin.</DialogDescription>
+            <DialogDescription>
+              The first account to sign up becomes the Admin.
+            </DialogDescription>
           </DialogHeader>
-          <SignupForm onSuccess={(u) => { setSignupOpen(false); onSuccess(u); }} />
+          <SignupForm
+            onSuccess={(u) => {
+              setSignupOpen(false);
+              onSuccess(u);
+            }}
+          />
         </DialogContent>
       </Dialog>
     </>
@@ -166,10 +235,24 @@ function LoginForm({ onSuccess }: { onSuccess: (u: any) => void }) {
         }
       }}
     >
-      <Input placeholder="Email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
-      <Input placeholder="Password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} required />
+      <Input
+        placeholder="Email"
+        type="email"
+        value={email}
+        onChange={(e) => setEmail(e.target.value)}
+        required
+      />
+      <Input
+        placeholder="Password"
+        type="password"
+        value={password}
+        onChange={(e) => setPassword(e.target.value)}
+        required
+      />
       {error && <div className="text-sm text-destructive">{error}</div>}
-      <Button type="submit" className="w-full">Login</Button>
+      <Button type="submit" className="w-full">
+        Login
+      </Button>
     </form>
   );
 }
@@ -192,7 +275,13 @@ function SignupForm({ onSuccess }: { onSuccess: (u: any) => void }) {
           return;
         }
         try {
-          const u = await signupFull(firstName, lastName, phone, email, password);
+          const u = await signupFull(
+            firstName,
+            lastName,
+            phone,
+            email,
+            password,
+          );
           onSuccess(u);
         } catch (err: any) {
           setError(err.message || "Signup failed");
@@ -200,17 +289,52 @@ function SignupForm({ onSuccess }: { onSuccess: (u: any) => void }) {
       }}
     >
       <div className="grid grid-cols-2 gap-2">
-        <Input placeholder="First name" value={firstName} onChange={(e) => setFirstName(e.target.value)} required />
-        <Input placeholder="Last name" value={lastName} onChange={(e) => setLastName(e.target.value)} required />
+        <Input
+          placeholder="First name"
+          value={firstName}
+          onChange={(e) => setFirstName(e.target.value)}
+          required
+        />
+        <Input
+          placeholder="Last name"
+          value={lastName}
+          onChange={(e) => setLastName(e.target.value)}
+          required
+        />
       </div>
-      <Input placeholder="Phone number" value={phone} onChange={(e) => setPhone(e.target.value)} required />
-      <Input placeholder="Email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
+      <Input
+        placeholder="Phone number"
+        value={phone}
+        onChange={(e) => setPhone(e.target.value)}
+        required
+      />
+      <Input
+        placeholder="Email"
+        type="email"
+        value={email}
+        onChange={(e) => setEmail(e.target.value)}
+        required
+      />
       <div className="grid grid-cols-2 gap-2">
-        <Input placeholder="Password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} required />
-        <Input placeholder="Confirm password" type="password" value={confirm} onChange={(e) => setConfirm(e.target.value)} required />
+        <Input
+          placeholder="Password"
+          type="password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          required
+        />
+        <Input
+          placeholder="Confirm password"
+          type="password"
+          value={confirm}
+          onChange={(e) => setConfirm(e.target.value)}
+          required
+        />
       </div>
       {error && <div className="text-sm text-destructive">{error}</div>}
-      <Button type="submit" className="w-full">Create Account</Button>
+      <Button type="submit" className="w-full">
+        Create Account
+      </Button>
     </form>
   );
 }

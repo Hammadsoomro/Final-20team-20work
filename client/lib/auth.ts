@@ -60,7 +60,9 @@ export async function signupFull(
   } catch (e) {
     // Fallback to local (for offline/demo)
     const users = getUsersLocal();
-    const already = users.find((u) => u.email.toLowerCase() === email.toLowerCase());
+    const already = users.find(
+      (u) => u.email.toLowerCase() === email.toLowerCase(),
+    );
     if (already) throw e;
     const hasAdmin = users.some((u) => u.role === "admin");
     const role: Role = hasAdmin ? "seller" : "admin";
@@ -95,7 +97,9 @@ export async function login(email: string, password: string): Promise<User> {
   } catch (e) {
     // Fallback
     const users = getUsersLocal();
-    const user = users.find((u) => u.email.toLowerCase() === email.toLowerCase());
+    const user = users.find(
+      (u) => u.email.toLowerCase() === email.toLowerCase(),
+    );
     if (!user) throw e;
     setCurrentUser(user);
     return user;
@@ -116,7 +120,12 @@ export async function getUsers(): Promise<User[]> {
 
 export async function adminCreateMember(
   _current: User,
-  data: { name: string; email: string; password?: string; role: Exclude<Role, "admin"> },
+  data: {
+    name: string;
+    email: string;
+    password?: string;
+    role: Exclude<Role, "admin">;
+  },
 ): Promise<User> {
   try {
     return await api<User>("/api/admin/users", {
@@ -150,9 +159,16 @@ export async function adminRemoveMember(_current: User, id: string) {
   }
 }
 
-export async function adminToggleBlock(_current: User, id: string, blocked: boolean) {
+export async function adminToggleBlock(
+  _current: User,
+  id: string,
+  blocked: boolean,
+) {
   try {
-    await api("/api/admin/users/" + id + "/block", { method: "PATCH", body: JSON.stringify({ blocked }) });
+    await api("/api/admin/users/" + id + "/block", {
+      method: "PATCH",
+      body: JSON.stringify({ blocked }),
+    });
   } catch {
     const users = getUsersLocal();
     const idx = users.findIndex((u) => u.id === id);
@@ -163,7 +179,11 @@ export async function adminToggleBlock(_current: User, id: string, blocked: bool
   }
 }
 
-export async function addSales(userId: string, todayDelta: number, monthDelta: number) {
+export async function addSales(
+  userId: string,
+  todayDelta: number,
+  monthDelta: number,
+) {
   try {
     await api("/api/users/" + userId + "/sales", {
       method: "POST",

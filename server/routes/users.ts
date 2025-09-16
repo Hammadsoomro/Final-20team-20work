@@ -11,7 +11,10 @@ const signupSchema = z.object({
   password: z.string().min(6),
 });
 
-const loginSchema = z.object({ email: z.string().email(), password: z.string().min(1) });
+const loginSchema = z.object({
+  email: z.string().email(),
+  password: z.string().min(1),
+});
 
 export const signup: RequestHandler = async (req, res) => {
   try {
@@ -121,7 +124,10 @@ export const toggleBlock: RequestHandler = async (req, res) => {
 };
 
 export const addSalesApi: RequestHandler = async (req, res) => {
-  const schema = z.object({ todayDelta: z.number().int(), monthDelta: z.number().int() });
+  const schema = z.object({
+    todayDelta: z.number().int(),
+    monthDelta: z.number().int(),
+  });
   try {
     const { todayDelta, monthDelta } = schema.parse(req.body);
     const col = await usersCol();
