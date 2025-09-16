@@ -8,8 +8,16 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
-import Dashboard from "./pages/Dashboard";
 import { AuthProvider } from "@/context/AuthContext";
+import RequireAuth from "@/pages/app/RequireAuth";
+import AppLayout from "@/pages/app/Layout";
+import DashboardHome from "@/pages/app/DashboardHome";
+import TeamChat from "@/pages/app/TeamChat";
+import NumberSorter from "@/pages/app/NumberSorter";
+import Sales from "@/pages/app/Sales";
+import AdminPanel from "@/pages/app/AdminPanel";
+import Settings from "@/pages/app/Settings";
+import RequireAdmin from "@/pages/app/RequireAdmin";
 
 const queryClient = new QueryClient();
 
@@ -22,7 +30,30 @@ const App = () => (
         <AuthProvider>
           <Routes>
             <Route path="/" element={<Index />} />
-            <Route path="/app" element={<Dashboard />} />
+            <Route
+              path="/app"
+              element={
+                <RequireAuth>
+                  <AppLayout />
+                </RequireAuth>
+              }
+            >
+              <Route index element={<DashboardHome />} />
+              <Route path="chat" element={<TeamChat />} />
+              <Route path="sorter" element={<NumberSorter />} />
+              <Route path="sales" element={<Sales />} />
+              <Route
+                path="admin"
+                element={
+                  <RequireAuth>
+                    <RequireAdmin>
+                      <AdminPanel />
+                    </RequireAdmin>
+                  </RequireAuth>
+                }
+              />
+              <Route path="settings" element={<Settings />} />
+            </Route>
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

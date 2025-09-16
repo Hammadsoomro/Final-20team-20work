@@ -33,7 +33,7 @@ export default function Index() {
           <div className="flex items-center gap-2">
             <div className="size-8 rounded-md bg-white/90" />
             <div className="text-xl font-extrabold tracking-tight">
-              Team-Work
+              TeamFlow
             </div>
           </div>
           <div className="flex items-center gap-2">
@@ -50,7 +50,7 @@ export default function Index() {
           <div className="grid items-center gap-12 md:grid-cols-2">
             <div>
               <h1 className="text-5xl md:text-6xl font-extrabold leading-tight drop-shadow-lg">
-                Team-Work — Modern, Animated Dashboard Suite
+                TeamFlow — Modern, Animated Dashboard Suite
               </h1>
               <p className="mt-4 max-w-xl text-white/90">
                 Collaborate. Sell. Succeed. Create an account or sign in to
