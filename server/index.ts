@@ -12,7 +12,7 @@ import {
   addSalesApi,
 } from "./routes/users";
 
-export function createServer() {
+export async function createServer() {
   const app = express();
 
   // Middleware
@@ -39,7 +39,7 @@ export function createServer() {
   app.post("/api/users/:id/sales", addSalesApi);
 
   // Chat & Presence
-  const chat = await import("./routes/chat");
+  async chat = await import("./routes/chat");
   app.get("/api/chat/:roomId/messages", chat.listMessages);
   app.post("/api/chat/:roomId/messages", chat.postMessage);
   app.get("/api/chat/dm/:a/:b", chat.getDmRoomId);
