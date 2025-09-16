@@ -312,10 +312,10 @@ function TeamList({ users, onChange, canManage }: { users: User[]; onChange: () 
               <div className="text-sm text-muted-foreground truncate">{m.email}</div>
               {canManage && (
                 <div className="mt-4 flex items-center gap-2">
-                  <Button size="sm" variant={m.blocked ? "secondary" : "destructive"} onClick={() => { adminToggleBlock(JSON.parse(localStorage.getItem("current_user")||"null"), m.id, !m.blocked); onChange(); }}>
+                  <Button size="sm" variant={m.blocked ? "secondary" : "destructive"} onClick={async () => { await adminToggleBlock(JSON.parse(localStorage.getItem("current_user")||"null"), m.id, !m.blocked); await onChange(); }}>
                     {m.blocked ? "Unblock" : "Block"}
                   </Button>
-                  <Button size="sm" variant="outline" onClick={() => { adminRemoveMember(JSON.parse(localStorage.getItem("current_user")||"null"), m.id); onChange(); }}>Remove</Button>
+                  <Button size="sm" variant="outline" onClick={async () => { await adminRemoveMember(JSON.parse(localStorage.getItem("current_user")||"null"), m.id); await onChange(); }}>Remove</Button>
                 </div>
               )}
             </CardContent>
