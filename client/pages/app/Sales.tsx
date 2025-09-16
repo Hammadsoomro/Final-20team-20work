@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/context/AuthContext";
-import { User, addSales, getUsers, topSeller } from "@/lib/auth";
+import { User, addSales, getUsers } from "@/lib/auth";
 
 function Metric({ label, value, color }: { label: string; value: number; color: string }) {
   return (
@@ -45,10 +45,6 @@ export default function Sales() {
     const month = users.reduce((s, u) => s + (u.salesMonth ?? 0), 0);
     const members = users.filter((u) => !u.blocked).length;
     return { today, month, members };
-  }, [users]);
-
-  const top = useMemo(() => {
-    return users.length ? topSeller().catch(() => null) : Promise.resolve(null);
   }, [users]);
 
   const canAdjust = user?.role !== "seller";
