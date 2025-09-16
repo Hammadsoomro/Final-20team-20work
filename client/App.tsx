@@ -17,6 +17,7 @@ import NumberSorter from "@/pages/app/NumberSorter";
 import Sales from "@/pages/app/Sales";
 import AdminPanel from "@/pages/app/AdminPanel";
 import Settings from "@/pages/app/Settings";
+import RequireAdmin from "@/pages/app/RequireAdmin";
 
 const queryClient = new QueryClient();
 
