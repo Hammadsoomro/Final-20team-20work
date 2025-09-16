@@ -291,11 +291,11 @@ function TeamList({ users, onChange, canManage }: { users: User[]; onChange: () 
             <option value="seller">Seller</option>
             <option value="scrapper">Scrapper</option>
           </select>
-          <Button onClick={() => {
+          <Button onClick={async () => {
             const current = JSON.parse(localStorage.getItem("current_user")||"null");
-            adminCreateMember(current, { name, email, role });
+            await adminCreateMember(current, { name, email, role });
             setName(""); setEmail("");
-            onChange();
+            await onChange();
           }}>Add</Button>
         </div>
       )}
