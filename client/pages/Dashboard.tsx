@@ -163,7 +163,7 @@ export default function Dashboard() {
           {active === "sales" && (
             <SalesTracker users={users} onChange={refresh} canAdjust={user?.role !== "seller"} />
           )}
-          {active === "admin" && user?.role === "admin" && <AdminPanel onChange={refresh} />}
+          {active === "admin" && user?.role === "admin" && <AdminPanel users={users} onChange={refresh} />}
           {active === "settings" && <Settings />}
         </div>
       </SidebarInset>
