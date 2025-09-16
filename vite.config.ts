@@ -34,6 +34,13 @@ function expressPlugin(): Plugin {
 
       // Add Express app as middleware to Vite dev server
       server.middlewares.use(app);
+
+      // Attach Socket.IO to Vite's HTTP server
+      const httpServer = server.httpServer as any;
+      if (httpServer && !httpServer.__sockets_attached) {
+        httpServer.__sockets_attached = true;
+        import("./server/socket").then((m) => m.setupSockets(httpServer));
+      }
     },
   };
 }
