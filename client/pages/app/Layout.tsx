@@ -25,14 +25,22 @@ import {
 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { logout } from "@/lib/auth";
+import { getTotalUnread, onUnreadChange } from "@/lib/chatState";
 
 export default function AppLayout() {
   const navigate = useNavigate();
   const { user, logout: authLogout } = useAuth();
   const { pathname } = useLocation();
+  const [unread, setUnread] = useState(0);
 
   const isActive = (path: string) => pathname === path;
   const canUseSorter = user?.role === "admin" || user?.role === "scrapper";
+
+  useEffect(() => {
+    setUnread(getTotalUnread());
+    const off = onUnreadChange(() => setUnread(getTotalUnread()));
+    return () => off();
+  }, []);
 
   return (
     <SidebarProvider>
@@ -63,7 +71,14 @@ export default function AppLayout() {
                     onClick={() => navigate("/app/chat")}
                   >
                     <MessageCircle />
-                    <span>Team Chat</span>
+                    <span className="relative">
+                      Team Chat
+                      {unread > 0 && (
+                        <span className="absolute -right-8 -top-1 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-red-500 px-1 text-[10px] text-white">
+                          {unread}
+                        </span>
+                      )}
+                    </span>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
                 {canUseSorter && (
