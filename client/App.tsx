@@ -42,7 +42,16 @@ const App = () => (
               <Route path="chat" element={<TeamChat />} />
               <Route path="sorter" element={<NumberSorter />} />
               <Route path="sales" element={<Sales />} />
-              <Route path="admin" element={<RequireAuth><RequireAdmin><AdminPanel /></RequireAdmin></RequireAuth>} />
+              <Route
+                path="admin"
+                element={
+                  <RequireAuth>
+                    <RequireAdmin>
+                      <AdminPanel />
+                    </RequireAdmin>
+                  </RequireAuth>
+                }
+              />
               <Route path="settings" element={<Settings />} />
             </Route>
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}

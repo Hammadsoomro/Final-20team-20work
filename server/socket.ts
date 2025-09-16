@@ -11,10 +11,17 @@ const memory = {
   messages: [] as MessageDoc[],
 };
 
-type MessageDoc = { roomId: string; senderId: string; text: string; createdAt: number };
+type MessageDoc = {
+  roomId: string;
+  senderId: string;
+  text: string;
+  createdAt: number;
+};
 
 let currentIO: Server | null = null;
-export function getIO() { return currentIO; }
+export function getIO() {
+  return currentIO;
+}
 export function setupSockets(httpServer: HttpServer) {
   const io = new Server(httpServer, {
     path: "/socket.io",
@@ -88,7 +95,12 @@ export function setupSockets(httpServer: HttpServer) {
         const text = (payload?.text || "").trim();
         if (!toUserId || !text) return;
         const roomId = dmRoom(userId, toUserId);
-        const doc: MessageDoc = { roomId, senderId: userId, text, createdAt: Date.now() };
+        const doc: MessageDoc = {
+          roomId,
+          senderId: userId,
+          text,
+          createdAt: Date.now(),
+        };
         if (db) await db.collection("messages").insertOne(doc as any);
         else {
           memory.messages.push(doc);
@@ -133,7 +145,10 @@ async function emitPresence(io: Server) {
       .find({ lastSeen: { $gt: now - 30_000 } })
       .project({ userId: 1, _id: 0 })
       .toArray();
-    io.emit("presence:update", online.map((o: any) => o.userId));
+    io.emit(
+      "presence:update",
+      online.map((o: any) => o.userId),
+    );
   } catch {
     const now = Date.now();
     const online = Array.from(memory.presence.entries())

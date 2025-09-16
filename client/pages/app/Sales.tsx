@@ -4,12 +4,26 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { User, addSales, getUsers } from "@/lib/auth";
 
-function Metric({ label, value, color, onAdd }: { label: string; value: number; color: string; onAdd?: () => void }) {
+function Metric({
+  label,
+  value,
+  color,
+  onAdd,
+}: {
+  label: string;
+  value: number;
+  color: string;
+  onAdd?: () => void;
+}) {
   return (
     <div className="rounded-lg border p-3">
       <div className="text-xs text-muted-foreground">{label}</div>
       <div className="flex items-end justify-between">
-        <div className={`bg-gradient-to-br ${color} bg-clip-text text-transparent text-2xl font-extrabold`}>{value.toLocaleString()}</div>
+        <div
+          className={`bg-gradient-to-br ${color} bg-clip-text text-transparent text-2xl font-extrabold`}
+        >
+          {value.toLocaleString()}
+        </div>
         {onAdd && (
           <Button size="icon" variant="ghost" onClick={onAdd}>
             +
@@ -34,7 +48,9 @@ export default function Sales() {
   const refresh = async () => setUsers(await getUsers());
 
   const list = users.filter(
-    (u) => u.name.toLowerCase().includes(filter.toLowerCase()) || u.email.toLowerCase().includes(filter.toLowerCase()),
+    (u) =>
+      u.name.toLowerCase().includes(filter.toLowerCase()) ||
+      u.email.toLowerCase().includes(filter.toLowerCase()),
   );
 
   const canAdjust = user?.role !== "seller";
@@ -42,7 +58,11 @@ export default function Sales() {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between gap-2">
-        <Input placeholder="Search team" value={filter} onChange={(e) => setFilter(e.target.value)} />
+        <Input
+          placeholder="Search team"
+          value={filter}
+          onChange={(e) => setFilter(e.target.value)}
+        />
       </div>
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         {list.map((m) => (
@@ -50,11 +70,15 @@ export default function Sales() {
             <CardHeader>
               <CardTitle className="flex items-center justify-between">
                 <span className="truncate">{m.name}</span>
-                <span className="text-xs rounded-full px-2 py-0.5 bg-secondary">{m.role}</span>
+                <span className="text-xs rounded-full px-2 py-0.5 bg-secondary">
+                  {m.role}
+                </span>
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-sm text-muted-foreground truncate">{m.email}</div>
+              <div className="text-sm text-muted-foreground truncate">
+                {m.email}
+              </div>
               <div className="mt-3 grid grid-cols-2 gap-3">
                 <Metric
                   label="Today"

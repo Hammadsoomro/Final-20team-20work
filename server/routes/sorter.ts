@@ -32,11 +32,7 @@ export const addLines: RequestHandler = async (req, res) => {
   const schema = z.object({ lines: z.array(z.string().min(1)).min(1) });
   const { lines } = schema.parse(req.body);
   const norm = Array.from(
-    new Set(
-      lines
-        .map((l) => l.trim())
-        .filter((l) => l.length > 0),
-    ),
+    new Set(lines.map((l) => l.trim()).filter((l) => l.length > 0)),
   );
   const db = await getDb();
   const col = db.collection("sorter_queue");
@@ -46,7 +42,9 @@ export const addLines: RequestHandler = async (req, res) => {
     const ops = norm.map((v) => ({
       updateOne: {
         filter: { value: v },
-        update: { $setOnInsert: { value: v, status: "pending", createdAt: now } },
+        update: {
+          $setOnInsert: { value: v, status: "pending", createdAt: now },
+        },
         upsert: true,
       },
     }));
@@ -59,7 +57,10 @@ export const addLines: RequestHandler = async (req, res) => {
       .project({ _id: 0, value: 1 })
       .sort({ createdAt: 1 })
       .toArray();
-    io.emit("sorter:update", list.map((d: any) => d.value));
+    io.emit(
+      "sorter:update",
+      list.map((d: any) => d.value),
+    );
   }
   res.json({ ok: true });
 };
@@ -88,7 +89,8 @@ export const distribute: RequestHandler = async (req, res) => {
     const onlineSet = new Set(online.map((o: any) => o.userId));
     sellerIds = sellerIds.filter((id) => onlineSet.has(id));
   }
-  if (!sellerIds.length) return res.status(400).json({ error: "No sellers available" });
+  if (!sellerIds.length)
+    return res.status(400).json({ error: "No sellers available" });
 
   const take = perUser * sellerIds.length;
   const qcol = db.collection("sorter_queue");
@@ -102,14 +104,19 @@ export const distribute: RequestHandler = async (req, res) => {
   const io = await getIo();
   const msgCol = db.collection("messages");
 
-  const assignments: { userId: string; values: string[] }[] = sellerIds.map((id) => ({ userId: id, values: [] }));
+  const assignments: { userId: string; values: string[] }[] = sellerIds.map(
+    (id) => ({ userId: id, values: [] }),
+  );
   for (let i = 0; i < pending.length; i++) {
     const owner = assignments[i % assignments.length];
     owner.values.push(pending[i].value as string);
   }
 
   const ids = pending.map((p) => p._id);
-  await qcol.updateMany({ _id: { $in: ids } }, { $set: { status: "sent", sentAt: Date.now() } });
+  await qcol.updateMany(
+    { _id: { $in: ids } },
+    { $set: { status: "sent", sentAt: Date.now() } },
+  );
 
   for (const a of assignments) {
     if (!a.values.length) continue;
@@ -127,7 +134,10 @@ export const distribute: RequestHandler = async (req, res) => {
     .project({ _id: 0, value: 1 })
     .sort({ createdAt: 1 })
     .toArray();
-  io?.emit("sorter:update", fresh.map((d: any) => d.value));
+  io?.emit(
+    "sorter:update",
+    fresh.map((d: any) => d.value),
+  );
 
   res.json({ assignments, remaining });
 };

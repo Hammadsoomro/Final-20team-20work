@@ -6,14 +6,21 @@ import { useAuth } from "@/context/AuthContext";
 import { getUsers, User } from "@/lib/auth";
 import { getSocket } from "@/lib/socket";
 
-type Message = { roomId: string; senderId: string; text: string; createdAt: number };
+type Message = {
+  roomId: string;
+  senderId: string;
+  text: string;
+  createdAt: number;
+};
 
 export default function TeamChat() {
   const { user } = useAuth();
   const [contacts, setContacts] = useState<User[]>([]);
   const [online, setOnline] = useState<string[]>([]);
   const [filter, setFilter] = useState("");
-  const [activeRoom, setActiveRoom] = useState<{ type: "team" } | { type: "dm"; userId: string; roomId: string }>({ type: "team" });
+  const [activeRoom, setActiveRoom] = useState<
+    { type: "team" } | { type: "dm"; userId: string; roomId: string }
+  >({ type: "team" });
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const audioRef = useRef<AudioContext | null>(null);
@@ -63,7 +70,9 @@ export default function TeamChat() {
           if (!res.ok) throw new Error("history");
           setMessages(await res.json());
         } else {
-          const res = await fetch(`/api/chat/${activeRoom.roomId}/messages?limit=200`);
+          const res = await fetch(
+            `/api/chat/${activeRoom.roomId}/messages?limit=200`,
+          );
           if (!res.ok) throw new Error("history");
           setMessages(await res.json());
         }
@@ -129,14 +138,23 @@ export default function TeamChat() {
     if (activeRoom.type === "team") {
       socket?.emit("chat:team:send", { text: input.trim() });
     } else {
-      socket?.emit("chat:dm:send", { toUserId: activeRoom.userId, text: input.trim() });
+      socket?.emit("chat:dm:send", {
+        toUserId: activeRoom.userId,
+        text: input.trim(),
+      });
     }
     setInput("");
     scrollToBottom();
   }
 
-  const title = activeRoom.type === "team" ? "Team Chat" : contacts.find((c) => c.id === activeRoom.userId)?.name || "Chat";
-  const subtitle = activeRoom.type === "team" ? "Everyone can see this conversation" : contacts.find((c) => c.id === activeRoom.userId)?.email || "";
+  const title =
+    activeRoom.type === "team"
+      ? "Team Chat"
+      : contacts.find((c) => c.id === activeRoom.userId)?.name || "Chat";
+  const subtitle =
+    activeRoom.type === "team"
+      ? "Everyone can see this conversation"
+      : contacts.find((c) => c.id === activeRoom.userId)?.email || "";
 
   return (
     <div className="flex min-h-[70vh] gap-4">
@@ -150,14 +168,39 @@ export default function TeamChat() {
         </div>
         <div className="p-4 border-b">
           <div className="relative">
-            <Input placeholder="Search contacts..." value={filter} onChange={(e) => setFilter(e.target.value)} className="pl-10" />
-            <svg className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="m21 21-4.34-4.34" /><circle cx="11" cy="11" r="8" /></svg>
+            <Input
+              placeholder="Search contacts..."
+              value={filter}
+              onChange={(e) => setFilter(e.target.value)}
+              className="pl-10"
+            />
+            <svg
+              className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+            >
+              <path d="m21 21-4.34-4.34" />
+              <circle cx="11" cy="11" r="8" />
+            </svg>
           </div>
         </div>
         <div className="border-b p-2">
-          <Button className="w-full justify-start bg-gradient-to-r from-indigo-600 to-purple-600 text-white" onClick={selectTeam}>
+          <Button
+            className="w-full justify-start bg-gradient-to-r from-indigo-600 to-purple-600 text-white"
+            onClick={selectTeam}
+          >
             <div className="mr-2 inline-flex h-10 w-10 items-center justify-center rounded-full bg-white/20">
-              <svg className="h-5 w-5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" /></svg>
+              <svg
+                className="h-5 w-5 text-white"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+              >
+                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+              </svg>
             </div>
             <div className="text-left">
               <div className="font-medium">Team Chat</div>
@@ -167,18 +210,41 @@ export default function TeamChat() {
         </div>
         <div className="h-[44vh] overflow-y-auto p-2">
           {filtered.map((c) => (
-            <button key={c.id} className="w-full rounded-md p-2 text-left hover:bg-gray-50" onClick={() => selectDm(c.id)}>
+            <button
+              key={c.id}
+              className="w-full rounded-md p-2 text-left hover:bg-gray-50"
+              onClick={() => selectDm(c.id)}
+            >
               <div className="flex items-center gap-2">
-                <div className={`relative h-10 w-10 rounded-full ${online.includes(c.id) ? "bg-emerald-100 text-emerald-600" : "bg-gray-100 text-gray-600"} inline-flex items-center justify-center`}>
-                  <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /></svg>
-                  <span className={`absolute -bottom-1 -right-1 h-3 w-3 rounded-full ${online.includes(c.id) ? "bg-emerald-500" : "bg-gray-300"} ring-2 ring-white`} />
+                <div
+                  className={`relative h-10 w-10 rounded-full ${online.includes(c.id) ? "bg-emerald-100 text-emerald-600" : "bg-gray-100 text-gray-600"} inline-flex items-center justify-center`}
+                >
+                  <svg
+                    className="h-5 w-5"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                  >
+                    <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+                    <circle cx="9" cy="7" r="4" />
+                  </svg>
+                  <span
+                    className={`absolute -bottom-1 -right-1 h-3 w-3 rounded-full ${online.includes(c.id) ? "bg-emerald-500" : "bg-gray-300"} ring-2 ring-white`}
+                  />
                 </div>
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center justify-between">
-                    <div className="truncate font-medium text-gray-900">{c.name}</div>
-                    <span className="text-[10px] uppercase text-gray-400">{c.role}</span>
+                    <div className="truncate font-medium text-gray-900">
+                      {c.name}
+                    </div>
+                    <span className="text-[10px] uppercase text-gray-400">
+                      {c.role}
+                    </span>
                   </div>
-                  <div className="truncate text-xs text-gray-500">{c.email}</div>
+                  <div className="truncate text-xs text-gray-500">
+                    {c.email}
+                  </div>
                 </div>
               </div>
             </button>
@@ -195,23 +261,45 @@ export default function TeamChat() {
       <Card className="flex min-h-[60vh] flex-1 flex-col border bg-white">
         <div className="flex items-center gap-3 border-b p-4">
           <div className="inline-flex h-10 w-10 items-center justify-center rounded-md bg-gradient-to-r from-blue-600 to-indigo-600 text-white">
-            <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" /></svg>
+            <svg
+              className="h-5 w-5"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+            >
+              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+            </svg>
           </div>
           <div className="flex-1">
             <div className="font-semibold text-gray-900">{title}</div>
             <div className="text-sm text-gray-500">{subtitle}</div>
           </div>
         </div>
-        <div ref={listRef} className="flex-1 overflow-y-auto bg-gradient-to-b from-white to-gray-50 p-4">
+        <div
+          ref={listRef}
+          className="flex-1 overflow-y-auto bg-gradient-to-b from-white to-gray-50 p-4"
+        >
           {messages.length === 0 ? (
             <div className="py-12 text-center text-gray-400">
-              <svg className="mx-auto mb-4 h-12 w-12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" /></svg>
+              <svg
+                className="mx-auto mb-4 h-12 w-12"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+              >
+                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+              </svg>
               No messages yet. Start the conversation!
             </div>
           ) : (
             <div className="space-y-2">
               {messages.map((m, i) => (
-                <div key={i} className={`max-w-[70%] rounded-md px-3 py-2 text-sm ${m.senderId === user?.id ? "ml-auto bg-indigo-600 text-white" : "bg-gray-100 text-gray-900"}`}>
+                <div
+                  key={i}
+                  className={`max-w-[70%] rounded-md px-3 py-2 text-sm ${m.senderId === user?.id ? "ml-auto bg-indigo-600 text-white" : "bg-gray-100 text-gray-900"}`}
+                >
                   <div>{m.text}</div>
                 </div>
               ))}
@@ -226,7 +314,10 @@ export default function TeamChat() {
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && send()}
             />
-            <Button onClick={send} className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white">
+            <Button
+              onClick={send}
+              className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white"
+            >
               Send
             </Button>
           </div>
