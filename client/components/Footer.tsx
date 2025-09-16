@@ -37,7 +37,7 @@ export default function Footer() {
       <div className="border-t">
         <div className="container py-4 text-xs text-muted-foreground flex items-center justify-between">
           <span>© {new Date().getFullYear()} Team-Work. All rights reserved.</span>
-          <span>Made with love for teams.</span>
+          <span>Made with love for teams • Hammad Soomro</span>
         </div>
       </div>
     </footer>
