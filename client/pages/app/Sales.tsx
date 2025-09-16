@@ -20,9 +20,12 @@ function Metric({ label, value, color, onAdd }: { label: string; value: number; 
   );
 }
 
+import { useAuth } from "@/context/AuthContext";
+
 export default function Sales() {
   const [users, setUsers] = useState<User[]>([]);
   const [filter, setFilter] = useState("");
+  const { user } = useAuth();
 
   useEffect(() => {
     (async () => setUsers(await getUsers()))();
