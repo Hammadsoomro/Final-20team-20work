@@ -47,5 +47,11 @@ export async function createServer() {
   app.get("/api/presence/online", chat.listOnline);
   app.post("/api/distribute", chat.distributeNumbers);
 
+  // Sorter
+  const sorter = await import("./routes/sorter");
+  app.get("/api/sorter", sorter.listPending);
+  app.post("/api/sorter", sorter.addLines);
+  app.post("/api/sorter/distribute", sorter.distribute);
+
   return app;
 }

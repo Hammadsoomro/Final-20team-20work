@@ -13,6 +13,8 @@ const memory = {
 
 type MessageDoc = { roomId: string; senderId: string; text: string; createdAt: number };
 
+let currentIO: Server | null = null;
+export function getIO() { return currentIO; }
 export function setupSockets(httpServer: HttpServer) {
   const io = new Server(httpServer, {
     path: "/socket.io",
@@ -118,6 +120,7 @@ export function setupSockets(httpServer: HttpServer) {
     });
   });
 
+  currentIO = io;
   return io;
 }
 
