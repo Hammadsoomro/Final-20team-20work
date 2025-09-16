@@ -5,11 +5,22 @@ import { Input } from "@/components/ui/input";
 import { useAuth } from "@/context/AuthContext";
 import { User, addSales, getUsers } from "@/lib/auth";
 
-function Metric({ label, value, color }: { label: string; value: number; color: string }) {
+function Metric({
+  label,
+  value,
+  color,
+}: {
+  label: string;
+  value: number;
+  color: string;
+}) {
   return (
     <div className="rounded-lg p-4 bg-white shadow-sm">
       <div className="text-xs text-muted-foreground">{label}</div>
-      <div className="mt-2 text-2xl font-extrabold" style={{ background: "none" }}>
+      <div
+        className="mt-2 text-2xl font-extrabold"
+        style={{ background: "none" }}
+      >
         {value.toLocaleString()}
       </div>
     </div>
@@ -35,8 +46,10 @@ export default function Sales() {
   }
 
   const list = useMemo(() => {
-    return users.filter((u) =>
-      u.name.toLowerCase().includes(filter.toLowerCase()) || u.email.toLowerCase().includes(filter.toLowerCase()),
+    return users.filter(
+      (u) =>
+        u.name.toLowerCase().includes(filter.toLowerCase()) ||
+        u.email.toLowerCase().includes(filter.toLowerCase()),
     );
   }, [users, filter]);
 
@@ -53,7 +66,11 @@ export default function Sales() {
     setLoading(true);
     try {
       // call addSales with deltas (can be negative to reset)
-      await addSales(targetId, Number(todayDelta || 0), Number(monthDelta || 0));
+      await addSales(
+        targetId,
+        Number(todayDelta || 0),
+        Number(monthDelta || 0),
+      );
       await refresh();
       setEditing(null);
       setTodayDelta(0);
@@ -86,19 +103,33 @@ export default function Sales() {
       <header className="flex items-start justify-between gap-4">
         <div>
           <div className="inline-flex items-center gap-3">
-            <div className="h-10 w-10 rounded-md bg-gradient-to-br from-indigo-600 to-purple-600 flex items-center justify-center text-white font-bold">TR</div>
+            <div className="h-10 w-10 rounded-md bg-gradient-to-br from-indigo-600 to-purple-600 flex items-center justify-center text-white font-bold">
+              TR
+            </div>
             <div>
               <h2 className="text-2xl font-bold">Sales Tracker</h2>
-              <p className="text-sm text-muted-foreground">Track team sales performance by category</p>
+              <p className="text-sm text-muted-foreground">
+                Track team sales performance by category
+              </p>
             </div>
           </div>
         </div>
         <div className="flex items-center gap-3">
           <div className="text-sm text-muted-foreground">
-            Current Month: {new Date().toLocaleString(undefined, { month: "long", year: "numeric" })}
+            Current Month:{" "}
+            {new Date().toLocaleString(undefined, {
+              month: "long",
+              year: "numeric",
+            })}
           </div>
-          <Button onClick={refresh} variant="outline">Refresh</Button>
-          <Button onClick={handleResetMonth} disabled={!canAdjust || loading} className="bg-orange-600 text-white">
+          <Button onClick={refresh} variant="outline">
+            Refresh
+          </Button>
+          <Button
+            onClick={handleResetMonth}
+            disabled={!canAdjust || loading}
+            className="bg-orange-600 text-white"
+          >
             Reset Month
           </Button>
         </div>
@@ -112,9 +143,16 @@ export default function Sales() {
           <div className="text-xs text-muted-foreground">Top Seller</div>
           <div className="mt-2 text-lg font-semibold">
             {/* show top seller name or none */}
-            {(users.length && (users.reduce((a, b) => (a.salesMonth! >= b.salesMonth! ? a : b)).name as string)) || "None"}
+            {(users.length &&
+              (users.reduce((a, b) => (a.salesMonth! >= b.salesMonth! ? a : b))
+                .name as string)) ||
+              "None"}
           </div>
-          <div className="text-sm text-muted-foreground">{users.length ? `${users.reduce((a, b) => (a.salesMonth! >= b.salesMonth! ? a : b)).salesMonth ?? 0} sales` : "0 sales"}</div>
+          <div className="text-sm text-muted-foreground">
+            {users.length
+              ? `${users.reduce((a, b) => (a.salesMonth! >= b.salesMonth! ? a : b)).salesMonth ?? 0} sales`
+              : "0 sales"}
+          </div>
         </div>
       </section>
 
@@ -123,7 +161,11 @@ export default function Sales() {
           <div className="p-4 border-b">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <Input placeholder="Search team" value={filter} onChange={(e) => setFilter(e.target.value)} />
+                <Input
+                  placeholder="Search team"
+                  value={filter}
+                  onChange={(e) => setFilter(e.target.value)}
+                />
               </div>
             </div>
           </div>
@@ -146,30 +188,61 @@ export default function Sales() {
                   <tr key={m.id} className={m.blocked ? "opacity-60" : ""}>
                     <td className="px-4 py-4 align-top">
                       <div className="flex items-center gap-3">
-                        <div className="h-8 w-8 rounded-md bg-gradient-to-br from-indigo-600 to-purple-600 flex items-center justify-center text-white font-semibold">{m.name?.charAt(0) ?? "U"}</div>
+                        <div className="h-8 w-8 rounded-md bg-gradient-to-br from-indigo-600 to-purple-600 flex items-center justify-center text-white font-semibold">
+                          {m.name?.charAt(0) ?? "U"}
+                        </div>
                         <div>
                           <div className="font-medium">{m.name}</div>
-                          <div className="text-xs text-muted-foreground">{m.email}</div>
+                          <div className="text-xs text-muted-foreground">
+                            {m.email}
+                          </div>
                         </div>
                       </div>
                     </td>
                     <td className="px-4 py-4 align-top">
-                      <span className="inline-block rounded-full px-2 py-0.5 text-xs bg-gray-100">{m.role}</span>
+                      <span className="inline-block rounded-full px-2 py-0.5 text-xs bg-gray-100">
+                        {m.role}
+                      </span>
                     </td>
                     <td className="px-4 py-4 align-top">{m.salesToday ?? 0}</td>
                     <td className="px-4 py-4 align-top">{m.salesMonth ?? 0}</td>
                     <td className="px-4 py-4 align-top">
-                      <div className="text-sm text-muted-foreground">{m.salesMonth ? "—" : "No sales yet"}</div>
+                      <div className="text-sm text-muted-foreground">
+                        {m.salesMonth ? "—" : "No sales yet"}
+                      </div>
                     </td>
-                    <td className="px-4 py-4 align-top">{m.createdAt ? new Date(m.createdAt).toLocaleDateString() : "Never"}</td>
+                    <td className="px-4 py-4 align-top">
+                      {m.createdAt
+                        ? new Date(m.createdAt).toLocaleDateString()
+                        : "Never"}
+                    </td>
                     <td className="px-4 py-4 align-top">
                       <div className="flex items-center gap-2">
                         {canAdjust && (
-                          <Button size="sm" variant="ghost" onClick={() => { setEditing(m.id); setTodayDelta(0); setMonthDelta(0); }}>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={() => {
+                              setEditing(m.id);
+                              setTodayDelta(0);
+                              setMonthDelta(0);
+                            }}
+                          >
                             Edit
                           </Button>
                         )}
-                        {canAdjust && <Button size="sm" variant="ghost" onClick={async () => { await addSales(m.id, 50, 50); await refresh(); }}>+50</Button>}
+                        {canAdjust && (
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={async () => {
+                              await addSales(m.id, 50, 50);
+                              await refresh();
+                            }}
+                          >
+                            +50
+                          </Button>
+                        )}
                       </div>
                     </td>
                   </tr>
@@ -186,24 +259,47 @@ export default function Sales() {
             <div className="p-4 border-b flex items-center justify-between">
               <div>
                 <h3 className="text-lg font-semibold">Edit sales</h3>
-                <p className="text-sm text-muted-foreground">Adjust today's or monthly totals for the user</p>
+                <p className="text-sm text-muted-foreground">
+                  Adjust today's or monthly totals for the user
+                </p>
               </div>
               <div>
-                <Button variant="ghost" onClick={() => setEditing(null)}>Close</Button>
+                <Button variant="ghost" onClick={() => setEditing(null)}>
+                  Close
+                </Button>
               </div>
             </div>
             <div className="p-4 grid grid-cols-1 gap-3">
               <div>
-                <label className="text-sm">Add to Today (positive or negative)</label>
-                <Input type="number" value={String(todayDelta)} onChange={(e) => setTodayDelta(Number(e.target.value))} />
+                <label className="text-sm">
+                  Add to Today (positive or negative)
+                </label>
+                <Input
+                  type="number"
+                  value={String(todayDelta)}
+                  onChange={(e) => setTodayDelta(Number(e.target.value))}
+                />
               </div>
               <div>
-                <label className="text-sm">Add to Month (positive or negative)</label>
-                <Input type="number" value={String(monthDelta)} onChange={(e) => setMonthDelta(Number(e.target.value))} />
+                <label className="text-sm">
+                  Add to Month (positive or negative)
+                </label>
+                <Input
+                  type="number"
+                  value={String(monthDelta)}
+                  onChange={(e) => setMonthDelta(Number(e.target.value))}
+                />
               </div>
               <div className="flex gap-2 justify-end">
-                <Button variant="secondary" onClick={() => setEditing(null)}>Cancel</Button>
-                <Button onClick={() => handleSaveEdit(editing)} disabled={loading}>{loading ? "Saving..." : "Save changes"}</Button>
+                <Button variant="secondary" onClick={() => setEditing(null)}>
+                  Cancel
+                </Button>
+                <Button
+                  onClick={() => handleSaveEdit(editing)}
+                  disabled={loading}
+                >
+                  {loading ? "Saving..." : "Save changes"}
+                </Button>
               </div>
             </div>
           </div>

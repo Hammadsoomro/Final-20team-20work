@@ -271,7 +271,9 @@ export default function TeamChat() {
                     </span>
                   </div>
                   <div className="flex items-center justify-between">
-                    <div className="truncate text-xs text-gray-500">{c.email}</div>
+                    <div className="truncate text-xs text-gray-500">
+                      {c.email}
+                    </div>
                     {user && getUnread(dmRoomKey(user.id, c.id)) > 0 && (
                       <span className="ml-2 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-red-500 px-1 text-[10px] text-white">
                         {getUnread(dmRoomKey(user.id, c.id))}
