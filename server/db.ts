@@ -5,7 +5,7 @@ let db: Db | null = null;
 
 export async function getDb() {
   if (db) return db;
-  const uri = process.env.MONGODB_URI;
+  const uri = process.env.MONGODB_URI || process.env.URI;
   if (!uri) throw new Error("MONGODB_URI is not set");
   client = new MongoClient(uri);
   await client.connect();
@@ -17,6 +17,7 @@ export async function getDb() {
 export type UserDoc = {
   _id?: string;
   id: string;
+  ownerId: string; // Team owner (admin). For admins, ownerId === id
   firstName: string;
   lastName: string;
   name: string;
