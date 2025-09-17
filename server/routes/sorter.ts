@@ -139,3 +139,56 @@ export const distribute: RequestHandler = async (req, res) => {
 
   res.json({ assignments, remaining });
 };
+
+async function getUserIdFromReq(req: any) {
+  const cookie = req.headers?.cookie || "";
+  const m = cookie
+    .split(";")
+    .map((s: any) => s.trim())
+    .find((c: any) => c.startsWith("session="));
+  const token = m ? m.split("=")[1] : null;
+  if (!token) return null;
+  const db = await getDb();
+  const s = await db.collection("sessions").findOne({ token });
+  if (!s) return null;
+  return s.userId as string;
+}
+
+export const listAssignments: RequestHandler = async (req, res) => {
+  try {
+    const userId = (req.query.userId as string) || (await getUserIdFromReq(req));
+    if (!userId) return res.status(400).json({ error: "userId required" });
+    const db = await getDb();
+    const rows = await db
+      .collection("sorter_assignments")
+      .find({ userId: String(userId), status: { $in: ["pending", "claimed"] } })
+      .toArray();
+    res.json({ assignments: rows });
+  } catch (e: any) {
+    res.status(400).json({ error: e.message || "Invalid" });
+  }
+};
+
+export const claimAssignment: RequestHandler = async (req, res) => {
+  try {
+    const schema = z.object({ userId: z.string().min(1) });
+    const { userId } = schema.parse(req.body);
+    const db = await getDb();
+    const a = await db.collection("sorter_assignments").findOneAndUpdate(
+      { userId, status: "pending" },
+      { $set: { status: "sent", sentAt: Date.now() } },
+      { returnDocument: "after" },
+    );
+    if (!a.value) return res.status(404).json({ error: "No assignments" });
+    const values = a.value.values || [];
+    const msgCol = db.collection("messages");
+    const roomId = dmRoom("system", userId);
+    const doc = { roomId, senderId: "system", text: (values || []).join("\n"), createdAt: Date.now() };
+    await msgCol.insertOne(doc as any);
+    const io = await getIo();
+    io?.to(roomId).emit("chat:message", doc);
+    res.json({ values });
+  } catch (e: any) {
+    res.status(400).json({ error: e.message || "Invalid" });
+  }
+};
