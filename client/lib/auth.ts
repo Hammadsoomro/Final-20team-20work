@@ -54,10 +54,18 @@ export async function logout(): Promise<void> {
   await api("/api/auth/logout", { method: "POST" });
 }
 
-export async function getUsers(currentUser: User): Promise<User[]> {
-  const ownerId = currentUser.ownerId || currentUser.id;
-  const url = `/api/users?ownerId=${encodeURIComponent(ownerId)}`;
-  return await api<User[]>(url);
+export async function getUsers(currentUser?: User): Promise<User[]> {
+  try {
+    let ownerId: string | undefined = currentUser?.ownerId || currentUser?.id;
+    if (!ownerId) {
+      const me = await api<User>("/api/auth/me");
+      ownerId = me.ownerId || me.id;
+    }
+    const url = ownerId ? `/api/users?ownerId=${encodeURIComponent(ownerId)}` : "/api/users";
+    return await api<User[]>(url);
+  } catch (e) {
+    return [];
+  }
 }
 
 export async function adminCreateMember(
