@@ -455,10 +455,7 @@ function TeamList({
           </select>
           <Button
             onClick={async () => {
-              const current = JSON.parse(
-                localStorage.getItem("current_user") || "null",
-              );
-              await adminCreateMember(current, { name, email, role });
+              await adminCreateMember(user!, { name, email, role });
               setName("");
               setEmail("");
               await onChange();
