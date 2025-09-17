@@ -11,14 +11,17 @@ class RestSocket {
   connected: boolean;
   private events: Map<string, Set<Handler>> = new Map();
   private presenceTimer: any = null;
-  private teamTimer: any = null;
-  private lastTeamTs = 0;
+  private messagesTimer: any = null;
+  private lastSeenPerRoom: Map<string, number> = new Map();
+  private joinedRooms: Set<string> = new Set();
 
   constructor(userId: string) {
     this.userId = userId;
     this.connected = true;
     // Immediately send heartbeat and start polling
     this.emit("presence:heartbeat").catch(() => {});
+    // join default team room
+    this.joinRoom("team");
     this.startPolling();
   }
 
@@ -79,7 +82,8 @@ class RestSocket {
       }
 
       if (event === "chat:join") {
-        // no-op for REST fallback
+        const roomId = (payload && payload.roomId) || "";
+        if (roomId) this.joinRoom(roomId);
         return;
       }
     } catch (e) {
@@ -90,8 +94,10 @@ class RestSocket {
   disconnect() {
     this.connected = false;
     if (this.presenceTimer) clearInterval(this.presenceTimer);
-    if (this.teamTimer) clearInterval(this.teamTimer);
+    if (this.messagesTimer) clearInterval(this.messagesTimer);
     this.events.clear();
+    this.joinedRooms.clear();
+    this.lastSeenPerRoom.clear();
   }
 
   private emitEvent(event: string, ...args: any[]) {
@@ -102,6 +108,11 @@ class RestSocket {
         fn(...args);
       } catch (e) {}
     }
+  }
+
+  private joinRoom(roomId: string) {
+    this.joinedRooms.add(roomId);
+    if (!this.lastSeenPerRoom.has(roomId)) this.lastSeenPerRoom.set(roomId, 0);
   }
 
   private startPolling() {
@@ -115,21 +126,25 @@ class RestSocket {
       } catch {}
     }, 3000);
 
-    // Team messages polling (fetch new messages)
-    this.teamTimer = setInterval(async () => {
+    // Messages polling for all joined rooms
+    this.messagesTimer = setInterval(async () => {
       try {
-        const res = await fetch(`/api/chat/team/messages?limit=200`, { credentials: "include" });
-        if (!res.ok) return;
-        const msgs = (await res.json()) as any[];
-        if (!Array.isArray(msgs)) return;
-        // emit messages with createdAt > lastTeamTs
-        for (const m of msgs) {
-          if (!m || typeof m.createdAt !== "number") continue;
-          if (m.createdAt > this.lastTeamTs) {
-            this.emitEvent("chat:message", m);
-          }
+        for (const roomId of Array.from(this.joinedRooms)) {
+          try {
+            const res = await fetch(`/api/chat/${encodeURIComponent(roomId)}/messages?limit=200`, { credentials: "include" });
+            if (!res.ok) continue;
+            const msgs = (await res.json()) as any[];
+            if (!Array.isArray(msgs)) continue;
+            const last = this.lastSeenPerRoom.get(roomId) || 0;
+            for (const m of msgs) {
+              if (!m || typeof m.createdAt !== "number") continue;
+              if (m.createdAt > last) {
+                this.emitEvent("chat:message", m);
+              }
+            }
+            if (msgs.length) this.lastSeenPerRoom.set(roomId, msgs[msgs.length - 1].createdAt || last);
+          } catch {}
         }
-        if (msgs.length) this.lastTeamTs = msgs[msgs.length - 1].createdAt || this.lastTeamTs;
       } catch {}
     }, 2000);
   }
