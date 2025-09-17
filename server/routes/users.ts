@@ -17,9 +17,30 @@ const loginSchema = z.object({
   password: z.string().min(1),
 });
 
+async function parseBodyFallback(req: any) {
+  if (req && req.body && Object.keys(req.body).length) return req.body;
+  try {
+    const chunks: Buffer[] = [];
+    for await (const chunk of req) chunks.push(typeof chunk === "string" ? Buffer.from(chunk) : chunk);
+    const raw = Buffer.concat(chunks).toString("utf-8").trim();
+    if (!raw) return {};
+    try {
+      return JSON.parse(raw);
+    } catch {
+      const params = new URLSearchParams(raw);
+      const obj: any = {};
+      for (const [k, v] of params) obj[k] = v;
+      return obj;
+    }
+  } catch {
+    return {};
+  }
+}
+
 export const signup: RequestHandler = async (req, res) => {
   try {
-    const body = signupSchema.parse(req.body);
+    const maybeBody = (req && req.body && Object.keys(req.body).length) ? req.body : await parseBodyFallback(req);
+    const body = signupSchema.parse(maybeBody);
     const col = await usersCol();
     const exists = await col.findOne({ email: body.email.toLowerCase() });
     if (exists) return res.status(400).json({ error: "Email already exists" });
@@ -44,9 +65,7 @@ export const signup: RequestHandler = async (req, res) => {
     // create session
     const db = await getDb();
     const token = crypto.randomUUID();
-    await db
-      .collection("sessions")
-      .insertOne({ token, userId: id, createdAt: Date.now() });
+    await db.collection("sessions").insertOne({ token, userId: id, createdAt: Date.now() });
     res.cookie("session", token, { httpOnly: true, sameSite: "lax" });
 
     const { passwordHash, ...safe } = user;
