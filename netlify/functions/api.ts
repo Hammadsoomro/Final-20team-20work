@@ -95,7 +95,19 @@ export const handler = async (event: any, context: any) => {
   if (method === "POST") {
     let parsedBody: any = null;
     try {
-      parsedBody = event.body && typeof event.body === "string" ? JSON.parse(event.body) : event.body;
+      if (event.body && typeof event.body === "string") {
+        try {
+          parsedBody = JSON.parse(event.body);
+        } catch (err) {
+          // try base64
+          try {
+            const decoded = Buffer.from(event.body, "base64").toString("utf-8");
+            parsedBody = JSON.parse(decoded);
+          } catch (e) {
+            parsedBody = null;
+          }
+        }
+      } else parsedBody = event.body;
     } catch {}
     if (parsedBody && parsedBody.firstName && parsedBody.lastName && parsedBody.phone && parsedBody.email && parsedBody.password) {
       return await handleSignupEvent(event);
