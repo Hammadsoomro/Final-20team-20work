@@ -33,7 +33,13 @@ export default function Settings() {
       });
       if (!res.ok) throw new Error("Failed");
       // refresh auth user
-      if (typeof refresh === "function") await refresh();
+      try {
+        const r = await fetch('/api/auth/me', { credentials: 'include' });
+        if (r.ok) {
+          const d = await r.json();
+          setUser(d);
+        }
+      } catch {}
       setPassword("");
       alert("Settings saved");
     } catch (e: any) {
