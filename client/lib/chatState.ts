@@ -50,7 +50,7 @@ export async function clearUnread(roomId: string) {
 }
 export async function clearAll() {
   try {
-    await fetch("/api/unread/clearAll", { method: "POST" });
+    await fetch("/api/unread/clearAll", { method: "POST", credentials: "include" });
   } catch {}
   map = {};
   window.dispatchEvent(new CustomEvent(EVT));
