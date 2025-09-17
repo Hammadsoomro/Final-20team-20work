@@ -45,17 +45,33 @@ async function handleSignupEvent(event: any) {
     };
     await col.insertOne(user as any);
     const token = crypto.randomUUID();
-    await db.collection("sessions").insertOne({ token, userId: id, createdAt: Date.now() });
+    await db
+      .collection("sessions")
+      .insertOne({ token, userId: id, createdAt: Date.now() });
     return {
       statusCode: 200,
       headers: {
         "Content-Type": "application/json",
         "Set-Cookie": `session=${token}; Path=/; HttpOnly; SameSite=Lax`,
       },
-      body: JSON.stringify({ id: user.id, ownerId: user.ownerId, name: user.name, email: user.email, role: user.role, blocked: false, salesToday: 0, salesMonth: 0, createdAt: user.createdAt }),
+      body: JSON.stringify({
+        id: user.id,
+        ownerId: user.ownerId,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        blocked: false,
+        salesToday: 0,
+        salesMonth: 0,
+        createdAt: user.createdAt,
+      }),
     };
   } catch (e: any) {
-    return { statusCode: 500, headers: { "Content-Type": "application/json" }, body: JSON.stringify({ error: e.message }) };
+    return {
+      statusCode: 500,
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ error: e.message }),
+    };
   }
 }
 
@@ -65,27 +81,62 @@ async function handleLoginEvent(event: any) {
     const body = raw && typeof raw === "string" ? JSON.parse(raw) : raw;
     const { email, password } = body || {};
     if (!email || !password) {
-      return { statusCode: 400, headers: { "Content-Type": "application/json" }, body: JSON.stringify({ error: "Missing fields" }) };
+      return {
+        statusCode: 400,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ error: "Missing fields" }),
+      };
     }
     const db = await getDb();
     const col = db.collection("users");
     const u = await col.findOne({ email: email.toLowerCase() });
-    if (!u) return { statusCode: 400, headers: { "Content-Type": "application/json" }, body: JSON.stringify({ error: "Invalid credentials" }) };
+    if (!u)
+      return {
+        statusCode: 400,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ error: "Invalid credentials" }),
+      };
     const ok = await bcrypt.compare(password, u.passwordHash);
-    if (!ok) return { statusCode: 400, headers: { "Content-Type": "application/json" }, body: JSON.stringify({ error: "Invalid credentials" }) };
-    if (u.blocked) return { statusCode: 403, headers: { "Content-Type": "application/json" }, body: JSON.stringify({ error: "Account is blocked" }) };
+    if (!ok)
+      return {
+        statusCode: 400,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ error: "Invalid credentials" }),
+      };
+    if (u.blocked)
+      return {
+        statusCode: 403,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ error: "Account is blocked" }),
+      };
     const token = crypto.randomUUID();
-    await db.collection("sessions").insertOne({ token, userId: u.id, createdAt: Date.now() });
+    await db
+      .collection("sessions")
+      .insertOne({ token, userId: u.id, createdAt: Date.now() });
     return {
       statusCode: 200,
       headers: {
         "Content-Type": "application/json",
         "Set-Cookie": `session=${token}; Path=/; HttpOnly; SameSite=Lax`,
       },
-      body: JSON.stringify({ id: u.id, ownerId: u.ownerId, name: u.name, email: u.email, role: u.role, blocked: u.blocked, salesToday: u.salesToday, salesMonth: u.salesMonth, createdAt: u.createdAt }),
+      body: JSON.stringify({
+        id: u.id,
+        ownerId: u.ownerId,
+        name: u.name,
+        email: u.email,
+        role: u.role,
+        blocked: u.blocked,
+        salesToday: u.salesToday,
+        salesMonth: u.salesMonth,
+        createdAt: u.createdAt,
+      }),
     };
   } catch (e: any) {
-    return { statusCode: 500, headers: { "Content-Type": "application/json" }, body: JSON.stringify({ error: e.message }) };
+    return {
+      statusCode: 500,
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ error: e.message }),
+    };
   }
 }
 
@@ -109,10 +160,22 @@ export const handler = async (event: any, context: any) => {
         }
       } else parsedBody = event.body;
     } catch {}
-    if (parsedBody && parsedBody.firstName && parsedBody.lastName && parsedBody.phone && parsedBody.email && parsedBody.password) {
+    if (
+      parsedBody &&
+      parsedBody.firstName &&
+      parsedBody.lastName &&
+      parsedBody.phone &&
+      parsedBody.email &&
+      parsedBody.password
+    ) {
       return await handleSignupEvent(event);
     }
-    if (parsedBody && parsedBody.email && parsedBody.password && !parsedBody.firstName) {
+    if (
+      parsedBody &&
+      parsedBody.email &&
+      parsedBody.password &&
+      !parsedBody.firstName
+    ) {
       return await handleLoginEvent(event);
     }
   }
