@@ -486,13 +486,8 @@ function TeamList({
                     size="sm"
                     variant={m.blocked ? "secondary" : "destructive"}
                     onClick={async () => {
-                      await adminToggleBlock(
-                        JSON.parse(
-                          localStorage.getItem("current_user") || "null",
-                        ),
-                        m.id,
-                        !m.blocked,
-                      );
+                      await adminToggleBlock(m.id, !m.blocked);
+
                       await onChange();
                     }}
                   >
