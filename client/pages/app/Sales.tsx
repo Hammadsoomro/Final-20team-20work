@@ -39,11 +39,17 @@ export default function Sales() {
   async function handleSaveEdit(targetId: string) {
     setLoading(true);
     try {
-      await addSales(targetId, todayDelta, monthDelta);
+      await addSales(targetId, todayDelta, 0);
+      // set category
+      await fetch(`/api/users/${encodeURIComponent(targetId)}`, {
+        method: "PATCH",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ salesCategory: category }),
+      });
       await refresh();
       setEditing(null);
       setTodayDelta(0);
-      setMonthDelta(0);
     } finally {
       setLoading(false);
     }
