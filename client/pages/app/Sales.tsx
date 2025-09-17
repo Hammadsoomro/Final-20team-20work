@@ -261,9 +261,7 @@ export default function Sales() {
             </div>
             <div className="p-4 grid grid-cols-1 gap-3">
               <div>
-                <label className="text-sm">
-                  Add to Today (positive or negative)
-                </label>
+                <label className="text-sm">Add to Today (positive or negative)</label>
                 <Input
                   type="number"
                   value={String(todayDelta)}
@@ -271,23 +269,18 @@ export default function Sales() {
                 />
               </div>
               <div>
-                <label className="text-sm">
-                  Add to Month (positive or negative)
-                </label>
-                <Input
-                  type="number"
-                  value={String(monthDelta)}
-                  onChange={(e) => setMonthDelta(Number(e.target.value))}
-                />
+                <label className="text-sm">Sales Category</label>
+                <select className="w-full border rounded px-2 py-1" value={category} onChange={(e) => setCategory(e.target.value)}>
+                  {categories.map((c) => (
+                    <option key={c} value={c}>{c}</option>
+                  ))}
+                </select>
               </div>
               <div className="flex gap-2 justify-end">
                 <Button variant="secondary" onClick={() => setEditing(null)}>
                   Cancel
                 </Button>
-                <Button
-                  onClick={() => handleSaveEdit(editing)}
-                  disabled={loading}
-                >
+                <Button onClick={() => handleSaveEdit(editing)} disabled={loading}>
                   {loading ? "Saving..." : "Save changes"}
                 </Button>
               </div>
