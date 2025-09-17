@@ -522,7 +522,7 @@ function TeamChat() {
   useEffect(() => {
     (async () => {
       try {
-        const res = await fetch(`/api/chat/team/messages?limit=200`);
+        const res = await fetch(`/api/chat/team/messages?limit=200`, { credentials: "include" });
         if (!res.ok) throw new Error("history");
         setMessages(await res.json());
       } catch {
