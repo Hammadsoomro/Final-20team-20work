@@ -1,10 +1,5 @@
 import { createContext, useContext, useEffect, useMemo, useState } from "react";
-import {
-  User,
-  getCurrentUser,
-  setCurrentUser,
-  logout as authLogout,
-} from "@/lib/auth";
+import { User, logout as authLogout } from "@/lib/auth";
 
 interface AuthCtx {
   user: User | null;
@@ -18,14 +13,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
 
   useEffect(() => {
-    setUser(getCurrentUser());
+    (async () => {
+      try {
+        const res = await fetch("/api/auth/me");
+        if (!res.ok) return setUser(null);
+        const data = await res.json();
+        setUser(data as User);
+      } catch {
+        setUser(null);
+      }
+    })();
   }, []);
 
   const value = useMemo(
     () => ({
       user,
       setUser: (u: User | null) => {
-        setCurrentUser(u);
         setUser(u);
       },
       logout: () => {
