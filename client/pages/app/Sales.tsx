@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/context/AuthContext";
-import { User, addSales, getUsers } from "@/lib/auth";
+import { User, addSales, getUsers, login } from "@/lib/auth";
 
 function Metric({
   label,
