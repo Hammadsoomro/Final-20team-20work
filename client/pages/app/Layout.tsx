@@ -95,6 +95,15 @@ export default function AppLayout() {
                 )}
                 <SidebarMenuItem>
                   <SidebarMenuButton
+                    isActive={isActive("/app/attendance")}
+                    onClick={() => navigate("/app/attendance")}
+                  >
+                    <BarChart3 />
+                    <span>Attendance</span>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+                <SidebarMenuItem>
+                  <SidebarMenuButton
                     isActive={isActive("/app/sales")}
                     onClick={() => navigate("/app/sales")}
                   >
