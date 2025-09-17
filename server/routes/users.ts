@@ -77,7 +77,8 @@ export const signup: RequestHandler = async (req, res) => {
 
 export const login: RequestHandler = async (req, res) => {
   try {
-    const body = loginSchema.parse(req.body);
+    const maybeBody = (req && req.body && Object.keys(req.body).length) ? req.body : await parseBodyFallback(req);
+    const body = loginSchema.parse(maybeBody);
     const col = await usersCol();
     const u = await col.findOne({ email: body.email.toLowerCase() });
     if (!u) return res.status(400).json({ error: "Invalid credentials" });
@@ -88,9 +89,7 @@ export const login: RequestHandler = async (req, res) => {
     // create session
     const db = await getDb();
     const token = crypto.randomUUID();
-    await db
-      .collection("sessions")
-      .insertOne({ token, userId: u.id, createdAt: Date.now() });
+    await db.collection("sessions").insertOne({ token, userId: u.id, createdAt: Date.now() });
     res.cookie("session", token, { httpOnly: true, sameSite: "lax" });
 
     const { passwordHash, ...safe } = u as any;
