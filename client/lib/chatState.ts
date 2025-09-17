@@ -6,7 +6,7 @@ let map: UnreadMap = {};
 // initialize from server
 (async function init() {
   try {
-    const res = await fetch("/api/unread");
+    const res = await fetch("/api/unread", { credentials: "include" });
     if (res.ok) {
       map = await res.json();
       window.dispatchEvent(new CustomEvent(EVT));
