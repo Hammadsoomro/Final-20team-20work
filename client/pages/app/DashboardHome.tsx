@@ -1,7 +1,9 @@
 import { useEffect, useMemo, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Crown } from "lucide-react";
-import { User, getUsers } from "@/lib/auth";
+import { User, getUsers, login } from "@/lib/auth"; // Assuming login gives you current user
+
+
 
 export default function DashboardHome() {
   const [users, setUsers] = useState<User[]>([]);
