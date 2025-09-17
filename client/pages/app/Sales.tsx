@@ -20,7 +20,8 @@ export default function Sales() {
   const [filter, setFilter] = useState("");
   const [editing, setEditing] = useState<string | null>(null);
   const [todayDelta, setTodayDelta] = useState<number>(0);
-  const [monthDelta, setMonthDelta] = useState<number>(0);
+  const categories = ["silver","gold","platinum","diamond","ruby","sapphire"];
+  const [category, setCategory] = useState<string>(categories[0]);
   const [loading, setLoading] = useState(false);
 
   const canAdjust = currentUser?.role !== "seller";
