@@ -101,9 +101,8 @@ export const distribute: RequestHandler = async (req, res) => {
     .toArray();
   if (!pending.length) return res.json({ assignments: [], remaining: 0 });
 
-  const io = await getIo();
-  const msgCol = db.collection("messages");
-
+  // Create assignments for users but don't send immediately. Salesmen will claim when their timer completes.
+  const qcol = db.collection("sorter_queue");
   const assignments: { userId: string; values: string[] }[] = sellerIds.map(
     (id) => ({ userId: id, values: [] }),
   );
@@ -115,25 +114,24 @@ export const distribute: RequestHandler = async (req, res) => {
   const ids = pending.map((p) => p._id);
   await qcol.updateMany(
     { _id: { $in: ids } },
-    { $set: { status: "sent", sentAt: Date.now() } },
+    { $set: { status: "assigned", assignedAt: Date.now() } },
   );
 
-  for (const a of assignments) {
-    if (!a.values.length) continue;
-    const text = a.values.join("\n");
-    const { userId } = a;
-    const roomId = dmRoom("system", userId);
-    const doc = { roomId, senderId: "system", text, createdAt: Date.now() };
-    await msgCol.insertOne(doc as any);
-    io?.to(roomId).emit("chat:message", doc);
-  }
+  const assignCol = db.collection("sorter_assignments");
+  const ops = assignments
+    .filter((a) => a.values.length)
+    .map((a) => ({ insertOne: { document: { userId: a.userId, values: a.values, status: "pending", createdAt: Date.now() } } }));
+  if (ops.length) await assignCol.bulkWrite(ops, { ordered: false }).catch(() => {});
 
   const remaining = await qcol.countDocuments({ status: { $ne: "sent" } });
+
   const fresh = await qcol
     .find({ status: { $ne: "sent" } })
     .project({ _id: 0, value: 1 })
     .sort({ createdAt: 1 })
     .toArray();
+
+  const io = await getIo();
   io?.emit(
     "sorter:update",
     fresh.map((d: any) => d.value),
