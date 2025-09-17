@@ -232,7 +232,7 @@ export const createMember: RequestHandler = async (req, res) => {
   const schema = z.object({
     name: z.string().min(1),
     email: z.string().email(),
-    role: z.enum(["scrapper", "seller"]),
+    role: z.enum(["scrapper", "seller", "salesman"]),
     password: z.string().optional(),
     ownerId: z.string().min(1),
   });
