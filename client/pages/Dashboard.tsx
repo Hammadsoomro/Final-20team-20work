@@ -497,12 +497,8 @@ function TeamList({
                     size="sm"
                     variant="outline"
                     onClick={async () => {
-                      await adminRemoveMember(
-                        JSON.parse(
-                          localStorage.getItem("current_user") || "null",
-                        ),
-                        m.id,
-                      );
+                      await adminRemoveMember(m.id);
+
                       await onChange();
                     }}
                   >
