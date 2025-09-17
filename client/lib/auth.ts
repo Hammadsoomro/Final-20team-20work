@@ -1,6 +1,4 @@
 export type Role = "admin" | "scrapper" | "seller";
-
-
 export type User = {
   id: string;
   ownerId: string;
