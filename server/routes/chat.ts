@@ -149,7 +149,7 @@ export const clearAllUnread: RequestHandler = async (_req, res) => {
 export const distributeNumbers: RequestHandler = async (req, res) => {
   const schema = z.object({
     numbers: z.array(z.string().min(1)),
-    roles: z.array(z.enum(["scrapper", "seller"])),
+    roles: z.array(z.enum(["scrapper", "seller", "salesman"])),
   });
   try {
     const { numbers, roles } = schema.parse(req.body);
