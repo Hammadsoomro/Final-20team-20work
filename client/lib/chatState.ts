@@ -28,6 +28,7 @@ export async function incUnread(roomId: string) {
   try {
     await fetch("/api/unread/inc", {
       method: "POST",
+      credentials: "include",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ roomId }),
     });
