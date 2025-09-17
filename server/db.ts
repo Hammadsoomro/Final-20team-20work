@@ -37,7 +37,7 @@ export type UserDoc = {
   phone: string;
   email: string;
   passwordHash: string;
-  role: "admin" | "scrapper" | "seller";
+  role: "admin" | "scrapper" | "seller" | "salesman";
   blocked?: boolean;
   salesToday?: number;
   salesMonth?: number;
