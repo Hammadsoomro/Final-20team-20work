@@ -40,6 +40,7 @@ export async function clearUnread(roomId: string) {
   try {
     await fetch("/api/unread/clear", {
       method: "POST",
+      credentials: "include",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ roomId }),
     });
