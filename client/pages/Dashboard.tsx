@@ -515,18 +515,34 @@ function TeamList({
 }
 
 function TeamChat() {
-  const [messages, setMessages] = useState<string[]>(() => {
-    const raw = localStorage.getItem("team_chat");
-    return raw ? (JSON.parse(raw) as string[]) : ["Welcome to Team Chat!"];
-  });
+  const [messages, setMessages] = useState<string[]>([]);
   const [input, setInput] = useState("");
   const { user } = useAuth();
-  const send = () => {
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const res = await fetch(`/api/chat/team/messages?limit=200`);
+        if (!res.ok) throw new Error("history");
+        setMessages(await res.json());
+      } catch {
+        setMessages(["Welcome to Team Chat!"]);
+      }
+    })();
+  }, []);
+
+  const send = async () => {
     if (!input.trim()) return;
-    const next = [...messages, `${user?.name ?? "User"}: ${input.trim()}`];
-    setMessages(next);
-    localStorage.setItem("team_chat", JSON.stringify(next));
+    try {
+      await fetch(`/api/chat/team/messages`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ senderId: user?.id, text: input.trim() }),
+      });
+    } catch {}
     setInput("");
+    // append locally for immediate feedback
+    setMessages((m) => [...m, `${user?.name ?? "User"}: ${input.trim()}`]);
   };
   return (
     <div className="grid h-[60vh] grid-rows-[1fr_auto] rounded-lg border overflow-hidden">
