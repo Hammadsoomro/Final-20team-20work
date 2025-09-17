@@ -49,6 +49,12 @@ export async function createServer() {
   app.get("/api/presence/online", chat.listOnline);
   app.post("/api/distribute", chat.distributeNumbers);
 
+  // Unread map APIs
+  app.get("/api/unread", chat.getUnread);
+  app.post("/api/unread/inc", chat.incUnread);
+  app.post("/api/unread/clear", chat.clearUnread);
+  app.post("/api/unread/clearAll", chat.clearAllUnread);
+
   // Sorter
   const sorter = await import("./routes/sorter");
   app.get("/api/sorter", sorter.listPending);
