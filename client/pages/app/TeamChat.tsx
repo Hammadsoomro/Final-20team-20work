@@ -1,4 +1,3 @@
-import { useEffect, useMemo, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
@@ -12,6 +11,7 @@ import {
   incUnread,
   onUnreadChange,
 } from "@/lib/chatState";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 type Message = {
   roomId: string;
@@ -28,6 +28,7 @@ export default function TeamChat() {
   const [activeRoom, setActiveRoom] = useState<
     { type: "team" } | { type: "dm"; userId: string; roomId: string }
   >({ type: "team" });
+  const activeRoomRef = useRef(activeRoom);
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const audioRef = useRef<AudioContext | null>(null);
@@ -35,6 +36,10 @@ export default function TeamChat() {
   const [unreadTick, setUnreadTick] = useState(0);
 
   const socket = useMemo(() => (user ? getSocket(user.id) : null), [user?.id]);
+
+  useEffect(() => {
+    activeRoomRef.current = activeRoom;
+  }, [activeRoom]);
 
   useEffect(() => {
     if (!user) return;
@@ -46,9 +51,11 @@ export default function TeamChat() {
 
     const onPresence = (ids: string[]) => setOnline(ids);
     const onMessage = (msg: Message) => {
+      const current = activeRoomRef.current;
       const isCurrent =
-        (activeRoom.type === "team" && msg.roomId === "team") ||
-        (activeRoom.type === "dm" && msg.roomId === activeRoom.roomId);
+        (current.type === "team" && msg.roomId === "team") ||
+        (current.type === "dm" && msg.roomId === current.roomId);
+
       if (isCurrent) {
         setMessages((m) => [...m, msg]);
         scrollToBottom();
@@ -73,19 +80,21 @@ export default function TeamChat() {
       socket.off("presence:update", onPresence);
       socket.off("chat:message", onMessage);
     };
-  }, [socket, user, activeRoom]);
+  }, [socket, user]);
 
   useEffect(() => {
     if (!user) return;
     (async () => {
       try {
+        setMessages([]);
         if (activeRoom.type === "team") {
-          const res = await fetch(`/api/chat/team/messages?limit=200`);
+          const res = await fetch(`/api/chat/${encodeURIComponent("team")}/messages?limit=200`, { credentials: "include" });
           if (!res.ok) throw new Error("history");
           setMessages(await res.json());
         } else {
           const res = await fetch(
-            `/api/chat/${activeRoom.roomId}/messages?limit=200`,
+            `/api/chat/${encodeURIComponent(activeRoom.roomId)}/messages?limit=200`,
+            { credentials: "include" },
           );
           if (!res.ok) throw new Error("history");
           setMessages(await res.json());
@@ -122,6 +131,7 @@ export default function TeamChat() {
   }
 
   async function selectTeam() {
+    if (socket) socket.emit("chat:join", { roomId: "team" });
     clearUnread("team");
     setUnreadTick((t) => t + 1);
     setActiveRoom({ type: "team" });
@@ -129,7 +139,7 @@ export default function TeamChat() {
 
   async function selectDm(targetId: string) {
     if (!user) return;
-    const r = await fetch(`/api/chat/dm/${user.id}/${targetId}`);
+    const r = await fetch(`/api/chat/dm/${user.id}/${targetId}`, { credentials: "include" });
     const data = (await r.json()) as { roomId: string };
     socket?.emit("chat:join", { roomId: data.roomId });
     clearUnread(data.roomId);
@@ -263,17 +273,11 @@ export default function TeamChat() {
                 </div>
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center justify-between">
-                    <div className="truncate font-medium text-gray-900">
-                      {c.name}
-                    </div>
-                    <span className="text-[10px] uppercase text-gray-400">
-                      {c.role}
-                    </span>
+                    <div className="truncate font-medium text-gray-900">{c.name}</div>
+                    <span className="text-[10px] uppercase text-gray-400">{c.role}</span>
                   </div>
                   <div className="flex items-center justify-between">
-                    <div className="truncate text-xs text-gray-500">
-                      {c.email}
-                    </div>
+                    <div className="truncate text-xs text-gray-500">{c.email}</div>
                     {user && getUnread(dmRoomKey(user.id, c.id)) > 0 && (
                       <span className="ml-2 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-red-500 px-1 text-[10px] text-white">
                         {getUnread(dmRoomKey(user.id, c.id))}
@@ -330,14 +334,25 @@ export default function TeamChat() {
             </div>
           ) : (
             <div className="space-y-2">
-              {messages.map((m, i) => (
-                <div
-                  key={i}
-                  className={`max-w-[70%] rounded-md px-3 py-2 text-sm ${m.senderId === user?.id ? "ml-auto bg-indigo-600 text-white" : "bg-gray-100 text-gray-900"}`}
-                >
-                  <div>{m.text}</div>
-                </div>
-              ))}
+              {messages.map((m, i) => {
+                const isMe = m.senderId === user?.id;
+                const sender = contacts.find((c) => c.id === m.senderId);
+                return (
+                  <div key={i} className="">
+                    {!isMe && (
+                      <div className="mb-1 text-xs text-gray-500">
+                        {sender ? sender.name : m.senderId}
+                      </div>
+                    )}
+                    <div
+                      className={`max-w-[70%] rounded-md px-3 py-2 text-sm ${isMe ? "ml-auto bg-indigo-600 text-white" : "bg-gray-100 text-gray-900"}`}
+                    >
+                      <div>{m.text}</div>
+                      <div className="mt-1 text-[10px] text-gray-400">{new Date(m.createdAt).toLocaleTimeString()}</div>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           )}
         </div>
