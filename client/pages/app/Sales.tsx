@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/context/AuthContext";
 import { User, addSales, getUsers } from "@/lib/auth";
+import { useEffect, useMemo, useState } from "react";
 
 function Metric({ label, value }: { label: string; value: number }) {
   return (
