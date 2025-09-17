@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input";
 import { useAuth } from "@/context/AuthContext";
 
 export default function Settings() {
-  const { user, refresh } = useAuth();
+  const { user, setUser } = useAuth();
   const [name, setName] = useState(user?.name || "");
   const [password, setPassword] = useState("");
   const [notifications, setNotifications] = useState(true);
