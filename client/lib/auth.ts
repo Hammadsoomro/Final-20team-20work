@@ -48,9 +48,7 @@ export async function login(email: string, password: string): Promise<User> {
     method: "POST",
     body: JSON.stringify({ email, password }),
   });
-}
-export async function getCurrentUser(): Promise<User> {
-  return await api<User>("/api/auth/me");
+
 }
 
 export async function logout(): Promise<void> {
