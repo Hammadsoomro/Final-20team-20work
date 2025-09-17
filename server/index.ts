@@ -32,6 +32,8 @@ export async function createServer() {
   // Auth & Users (MongoDB)
   app.post("/api/auth/signup", signupRoute);
   app.post("/api/auth/login", loginRoute);
+  app.post("/api/auth/logout", (await import("./routes/users")).logout);
+  app.get("/api/auth/me", (await import("./routes/users")).me);
   app.get("/api/users", listUsers);
   app.post("/api/admin/users", createMember);
   app.delete("/api/admin/users/:id", removeMember);
