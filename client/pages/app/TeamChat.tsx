@@ -50,7 +50,19 @@ export default function TeamChat() {
     if (!socket || !user) return;
 
     const onPresence = (ids: string[]) => setOnline(ids);
-    const onMessage = (msg: Message) => {
+    const onMessage = async (msg: Message) => {
+      // ensure we have sender info
+      const known = contacts.find((c) => c.id === msg.senderId);
+      if (!known) {
+        try {
+          const r = await fetch(`/api/users/${encodeURIComponent(msg.senderId)}`, { credentials: "include" });
+          if (r.ok) {
+            const u = await r.json();
+            setContacts((c) => [...c, u]);
+          }
+        } catch {}
+      }
+
       const current = activeRoomRef.current;
       const isCurrent =
         (current.type === "team" && msg.roomId === "team") ||
