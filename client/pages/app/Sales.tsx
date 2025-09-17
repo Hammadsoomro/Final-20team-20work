@@ -198,7 +198,7 @@ export default function Sales() {
                     <td className="px-4 py-4 align-top">{m.salesMonth ?? 0}</td>
                     <td className="px-4 py-4 align-top">
                       <div className="text-sm text-muted-foreground">
-                        {m.salesMonth ? "—" : "No sales yet"}
+                        {m.salesCategory || "—"}
                       </div>
                     </td>
                     <td className="px-4 py-4 align-top">
@@ -215,7 +215,7 @@ export default function Sales() {
                             onClick={() => {
                               setEditing(m.id);
                               setTodayDelta(0);
-                              setMonthDelta(0);
+                              setCategory(categories[0]);
                             }}
                           >
                             Edit
