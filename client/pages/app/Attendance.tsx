@@ -16,7 +16,10 @@ export default function Attendance() {
     try {
       setLoading(true);
       const ownerId = user?.ownerId || user?.id;
-      const res = await fetch(`/api/attendance?ownerId=${encodeURIComponent(ownerId)}`, { credentials: "include" });
+      const res = await fetch(
+        `/api/attendance?ownerId=${encodeURIComponent(ownerId)}`,
+        { credentials: "include" },
+      );
       if (!res.ok) throw new Error("Failed");
       const data = await res.json();
       setRecords(data);
@@ -29,12 +32,15 @@ export default function Attendance() {
 
   async function mark() {
     try {
-      const res = await fetch("/api/attendance", { method: "POST", credentials: "include" });
+      const res = await fetch("/api/attendance", {
+        method: "POST",
+        credentials: "include",
+      });
       if (!res.ok) throw new Error("Failed");
       const data = await res.json();
       alert("Attendance recorded: " + data.recordedAt);
       if (user?.role === "admin") fetchRecords();
-    } catch (e:any) {
+    } catch (e: any) {
       alert("Could not record attendance");
     }
   }
@@ -42,9 +48,13 @@ export default function Attendance() {
   return (
     <div>
       <h2 className="text-2xl font-bold">Attendance</h2>
-      <p className="text-muted-foreground">Clock in your attendance. Admins can view team attendance.</p>
+      <p className="text-muted-foreground">
+        Clock in your attendance. Admins can view team attendance.
+      </p>
       <div className="mt-4">
-        <Button onClick={mark} disabled={!user}>Mark Attendance</Button>
+        <Button onClick={mark} disabled={!user}>
+          Mark Attendance
+        </Button>
       </div>
       {user?.role === "admin" && (
         <div className="mt-6">
@@ -56,7 +66,9 @@ export default function Attendance() {
               {records.map((r) => (
                 <div key={r._id} className="rounded-md border p-2">
                   <div className="text-sm">User: {r.userId}</div>
-                  <div className="text-xs text-muted-foreground">{new Date(r.timestamp).toLocaleString()}</div>
+                  <div className="text-xs text-muted-foreground">
+                    {new Date(r.timestamp).toLocaleString()}
+                  </div>
                 </div>
               ))}
             </div>

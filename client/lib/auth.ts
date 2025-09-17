@@ -61,7 +61,9 @@ export async function getUsers(currentUser?: User): Promise<User[]> {
       const me = await api<User>("/api/auth/me");
       ownerId = me.ownerId || me.id;
     }
-    const url = ownerId ? `/api/users?ownerId=${encodeURIComponent(ownerId)}` : "/api/users";
+    const url = ownerId
+      ? `/api/users?ownerId=${encodeURIComponent(ownerId)}`
+      : "/api/users";
     return await api<User[]>(url);
   } catch (e) {
     return [];
