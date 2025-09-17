@@ -122,6 +122,64 @@ export const listUsers: RequestHandler = async (req, res) => {
   res.json(list);
 };
 
+export const getUserById: RequestHandler = async (req, res) => {
+  const col = await usersCol();
+  const id = req.params.id;
+  const user = await col.findOne({ id }, { projection: { passwordHash: 0 } });
+  if (!user) return res.status(404).json({ error: "Not found" });
+  res.json(user);
+};
+
+export const updateUser: RequestHandler = async (req, res) => {
+  try {
+    const schema = z.object({
+      name: z.string().min(1).optional(),
+      password: z.string().min(6).optional(),
+      notificationsEnabled: z.boolean().optional(),
+      salesCategory: z.string().optional(),
+      salesToday: z.number().optional(),
+    });
+    const body = schema.parse(req.body);
+    const col = await usersCol();
+    const updates: any = {};
+    if (body.name) {
+      updates.name = body.name;
+      updates.firstName = body.name.split(" ")[0] || body.name;
+      updates.lastName = body.name.split(" ").slice(1).join(" ") || "";
+    }
+    if (typeof body.notificationsEnabled === "boolean") {
+      updates.notificationsEnabled = body.notificationsEnabled;
+    }
+    if (typeof body.salesCategory === "string") {
+      updates.salesCategory = body.salesCategory;
+    }
+    if (typeof body.salesToday === "number") {
+      updates.salesToday = body.salesToday;
+    }
+    if (body.password) {
+      updates.passwordHash = await bcrypt.hash(body.password, 10);
+    }
+    if (!Object.keys(updates).length) return res.json({ ok: true });
+    await col.updateOne({ id: req.params.id }, { $set: updates });
+    const user = await col.findOne({ id: req.params.id }, { projection: { passwordHash: 0 } });
+    res.json(user);
+  } catch (e: any) {
+    res.status(400).json({ error: e.message || "Invalid request" });
+  }
+};
+
+export const setSalesCategory: RequestHandler = async (req, res) => {
+  try {
+    const schema = z.object({ category: z.string().min(1) });
+    const { category } = schema.parse(req.body);
+    const col = await usersCol();
+    await col.updateOne({ id: req.params.id }, { $set: { salesCategory: category } });
+    res.json({ ok: true });
+  } catch (e: any) {
+    res.status(400).json({ error: e.message || "Invalid request" });
+  }
+};
+
 // get current user from session cookie
 async function getUserFromReq(req: any) {
   try {
