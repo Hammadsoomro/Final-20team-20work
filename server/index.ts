@@ -35,6 +35,9 @@ export async function createServer() {
   app.post("/api/auth/logout", (await import("./routes/users")).logout);
   app.get("/api/auth/me", (await import("./routes/users")).me);
   app.get("/api/users", listUsers);
+  app.get("/api/users/:id", (await import("./routes/users")).getUserById);
+  app.patch("/api/users/:id", (await import("./routes/users")).updateUser);
+  app.post("/api/users/:id/salesCategory", (await import("./routes/users")).setSalesCategory);
   app.post("/api/admin/users", createMember);
   app.delete("/api/admin/users/:id", removeMember);
   app.patch("/api/admin/users/:id/block", toggleBlock);
