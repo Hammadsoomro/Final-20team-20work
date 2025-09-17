@@ -119,7 +119,9 @@ class RestSocket {
     // Presence polling
     this.presenceTimer = setInterval(async () => {
       try {
-        const res = await fetch(`/api/presence/online`, { credentials: "include" });
+        const res = await fetch(`/api/presence/online`, {
+          credentials: "include",
+        });
         if (!res.ok) return;
         const online = await res.json();
         this.emitEvent("presence:update", online);
@@ -131,7 +133,10 @@ class RestSocket {
       try {
         for (const roomId of Array.from(this.joinedRooms)) {
           try {
-            const res = await fetch(`/api/chat/${encodeURIComponent(roomId)}/messages?limit=200`, { credentials: "include" });
+            const res = await fetch(
+              `/api/chat/${encodeURIComponent(roomId)}/messages?limit=200`,
+              { credentials: "include" },
+            );
             if (!res.ok) continue;
             const msgs = (await res.json()) as any[];
             if (!Array.isArray(msgs)) continue;
@@ -142,7 +147,11 @@ class RestSocket {
                 this.emitEvent("chat:message", m);
               }
             }
-            if (msgs.length) this.lastSeenPerRoom.set(roomId, msgs[msgs.length - 1].createdAt || last);
+            if (msgs.length)
+              this.lastSeenPerRoom.set(
+                roomId,
+                msgs[msgs.length - 1].createdAt || last,
+              );
           } catch {}
         }
       } catch {}
