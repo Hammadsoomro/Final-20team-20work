@@ -10,17 +10,17 @@ interface AuthCtx {
 const Ctx = createContext<AuthCtx | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUserState] = useState<User | null>(null);
 
   useEffect(() => {
     (async () => {
       try {
         const res = await fetch("/api/auth/me");
-        if (!res.ok) return setUser(null);
+        if (!res.ok) return setUserState(null);
         const data = await res.json();
-        setUser(data as User);
+        setUserState(data as User);
       } catch {
-        setUser(null);
+        setUserState(null);
       }
     })();
   }, []);
@@ -29,11 +29,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     () => ({
       user,
       setUser: (u: User | null) => {
-        setUser(u);
+        setUserState(u);
       },
       logout: () => {
         authLogout();
-        setUser(null);
+        setUserState(null);
       },
     }),
     [user],
