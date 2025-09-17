@@ -9,8 +9,10 @@ import {
   adminToggleBlock,
   getUsers,
 } from "@/lib/auth";
+import { useAuth } from "@/context/AuthContext"; // Assuming you're using context
 
 export default function AdminPanel() {
+  const { user: currentUser } = useAuth(); // Get current user from context
   const [users, setUsers] = useState<User[]>([]);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -18,10 +20,39 @@ export default function AdminPanel() {
   const [password, setPassword] = useState("");
 
   useEffect(() => {
-    (async () => setUsers(await getUsers()))();
-  }, []);
+    if (!currentUser) return;
+    (async () => {
+      const team = await getUsers(currentUser);
+      setUsers(team);
+    })();
+  }, [currentUser]);
 
-  const refresh = async () => setUsers(await getUsers());
+  const refresh = async () => {
+    if (!currentUser) return;
+    const team = await getUsers(currentUser);
+    setUsers(team);
+  };
+
+  const handleAdd = async () => {
+    if (!currentUser) return;
+    await adminCreateMember(currentUser, { name, email, role, password });
+    setName("");
+    setEmail("");
+    setPassword("");
+    await refresh();
+  };
+
+  const handleToggleBlock = async (id: string, blocked: boolean) => {
+    if (!currentUser) return;
+    await adminToggleBlock(id, blocked);
+    await refresh();
+  };
+
+  const handleRemove = async (id: string) => {
+    if (!currentUser) return;
+    await adminRemoveMember(id);
+    await refresh();
+  };
 
   return (
     <div className="space-y-4">
@@ -54,21 +85,9 @@ export default function AdminPanel() {
           <option value="seller">Seller</option>
           <option value="scrapper">Scrapper</option>
         </select>
-        <Button
-          onClick={async () => {
-            const current = JSON.parse(
-              localStorage.getItem("current_user") || "null",
-            );
-            await adminCreateMember(current, { name, email, role, password });
-            setName("");
-            setEmail("");
-            setPassword("");
-            await refresh();
-          }}
-        >
-          Add
-        </Button>
+        <Button onClick={handleAdd}>Add</Button>
       </div>
+
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         {users.map((m) => (
           <Card key={m.id} className={m.blocked ? "opacity-60" : ""}>
@@ -88,31 +107,14 @@ export default function AdminPanel() {
                 <Button
                   size="sm"
                   variant={m.blocked ? "secondary" : "destructive"}
-                  onClick={async () => {
-                    await adminToggleBlock(
-                      JSON.parse(
-                        localStorage.getItem("current_user") || "null",
-                      ),
-                      m.id,
-                      !m.blocked,
-                    );
-                    await refresh();
-                  }}
+                  onClick={() => handleToggleBlock(m.id, !m.blocked)}
                 >
                   {m.blocked ? "Unblock" : "Block"}
                 </Button>
                 <Button
                   size="sm"
                   variant="outline"
-                  onClick={async () => {
-                    await adminRemoveMember(
-                      JSON.parse(
-                        localStorage.getItem("current_user") || "null",
-                      ),
-                      m.id,
-                    );
-                    await refresh();
-                  }}
+                  onClick={() => handleRemove(m.id)}
                 >
                   Remove
                 </Button>
