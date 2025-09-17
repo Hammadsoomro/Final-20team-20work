@@ -49,6 +49,9 @@ export async function login(email: string, password: string): Promise<User> {
     body: JSON.stringify({ email, password }),
   });
 }
+export async function getCurrentUser(): Promise<User> {
+  return await api<User>("/api/auth/me");
+}
 
 export async function logout(): Promise<void> {
   await api("/api/auth/logout", { method: "POST" });
