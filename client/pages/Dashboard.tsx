@@ -536,6 +536,7 @@ function TeamChat() {
     try {
       await fetch(`/api/chat/team/messages`, {
         method: "POST",
+        credentials: "include",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ senderId: user?.id, text: input.trim() }),
       });
