@@ -90,14 +90,19 @@ async function handleLoginEvent(event: any) {
 }
 
 export const handler = async (event: any, context: any) => {
-  // Netlify routes POST /api/auth/signup and /api/auth/login here
-  const path = event.path || event.rawPath || "";
   const method = (event.httpMethod || event.method || "GET").toUpperCase();
-  if (method === "POST" && path.endsWith("/api/auth/signup")) {
-    return await handleSignupEvent(event);
-  }
-  if (method === "POST" && path.endsWith("/api/auth/login")) {
-    return await handleLoginEvent(event);
+  // Try to detect signup/login by inspecting body content (fallback when path is proxied)
+  if (method === "POST") {
+    let parsedBody: any = null;
+    try {
+      parsedBody = event.body && typeof event.body === "string" ? JSON.parse(event.body) : event.body;
+    } catch {}
+    if (parsedBody && parsedBody.firstName && parsedBody.lastName && parsedBody.phone && parsedBody.email && parsedBody.password) {
+      return await handleSignupEvent(event);
+    }
+    if (parsedBody && parsedBody.email && parsedBody.password && !parsedBody.firstName) {
+      return await handleLoginEvent(event);
+    }
   }
 
   if (!_handler) {
