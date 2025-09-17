@@ -3,32 +3,19 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/context/AuthContext";
-import { User, addSales, getUsers, login } from "@/lib/auth";
+import { User, addSales, getUsers } from "@/lib/auth";
 
-function Metric({
-  label,
-  value,
-  color,
-}: {
-  label: string;
-  value: number;
-  color: string;
-}) {
+function Metric({ label, value }: { label: string; value: number }) {
   return (
     <div className="rounded-lg p-4 bg-white shadow-sm">
       <div className="text-xs text-muted-foreground">{label}</div>
-      <div
-        className="mt-2 text-2xl font-extrabold"
-        style={{ background: "none" }}
-      >
-        {value.toLocaleString()}
-      </div>
+      <div className="mt-2 text-2xl font-extrabold">{value.toLocaleString()}</div>
     </div>
   );
 }
 
 export default function Sales() {
-  const { user } = useAuth();
+  const { user: currentUser } = useAuth();
   const [users, setUsers] = useState<User[]>([]);
   const [filter, setFilter] = useState("");
   const [editing, setEditing] = useState<string | null>(null);
@@ -36,41 +23,22 @@ export default function Sales() {
   const [monthDelta, setMonthDelta] = useState<number>(0);
   const [loading, setLoading] = useState(false);
 
+  const canAdjust = currentUser?.role !== "seller";
+
   useEffect(() => {
-    refresh();
-  }, []);
+    if (currentUser) refresh();
+  }, [currentUser]);
 
   async function refresh() {
-    const list = await getUsers();
+    if (!currentUser) return;
+    const list = await getUsers(currentUser);
     setUsers(list);
   }
-
-  const list = useMemo(() => {
-    return users.filter(
-      (u) =>
-        u.name.toLowerCase().includes(filter.toLowerCase()) ||
-        u.email.toLowerCase().includes(filter.toLowerCase()),
-    );
-  }, [users, filter]);
-
-  const totals = useMemo(() => {
-    const today = users.reduce((s, u) => s + (u.salesToday ?? 0), 0);
-    const month = users.reduce((s, u) => s + (u.salesMonth ?? 0), 0);
-    const members = users.filter((u) => !u.blocked).length;
-    return { today, month, members };
-  }, [users]);
-
-  const canAdjust = user?.role !== "seller";
 
   async function handleSaveEdit(targetId: string) {
     setLoading(true);
     try {
-      // call addSales with deltas (can be negative to reset)
-      await addSales(
-        targetId,
-        Number(todayDelta || 0),
-        Number(monthDelta || 0),
-      );
+      await addSales(targetId, todayDelta, monthDelta);
       await refresh();
       setEditing(null);
       setTodayDelta(0);
@@ -81,16 +49,14 @@ export default function Sales() {
   }
 
   async function handleResetMonth() {
-    if (!canAdjust) return;
+    if (!canAdjust || !currentUser) return;
     setLoading(true);
     try {
-      // For each user, subtract their current salesMonth to reset to 0
       await Promise.all(
         users.map((u) => {
           const m = u.salesMonth ?? 0;
-          if (m === 0) return Promise.resolve(null);
-          return addSales(u.id, 0, -m);
-        }),
+          return m ? addSales(u.id, 0, -m) : Promise.resolve();
+        })
       );
       await refresh();
     } finally {
@@ -98,7 +64,30 @@ export default function Sales() {
     }
   }
 
+  const list = useMemo(() => {
+    return users.filter(
+      (u) =>
+        u.name.toLowerCase().includes(filter.toLowerCase()) ||
+        u.email.toLowerCase().includes(filter.toLowerCase())
+    );
+  }, [users, filter]);
+
+  const totals = useMemo(() => {
+    const today = users.reduce((s, u) => s + (u.salesToday ?? 0), 0);
+    const month = users.reduce((s, u) => s + (u.salesMonth ?? 0), 0);
+    const members = users.filter((u) => !u.blocked).length;
+    return { today, month, members };
+  }, [users]);
+
+  const topSeller = useMemo(() => {
+    const active = users.filter((u) => !u.blocked);
+    if (!active.length) return null;
+    return active.reduce((a, b) => (a.salesMonth! >= b.salesMonth! ? a : b));
+  }, [users]);
+
   return (
+
+
     <div className="space-y-6">
       <header className="flex items-start justify-between gap-4">
         <div>
