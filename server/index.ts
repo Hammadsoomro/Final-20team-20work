@@ -61,5 +61,10 @@ export async function createServer() {
   app.post("/api/sorter", sorter.addLines);
   app.post("/api/sorter/distribute", sorter.distribute);
 
+  // Attendance
+  const attendance = await import("./routes/attendance");
+  app.post("/api/attendance", attendance.postAttendance);
+  app.get("/api/attendance", attendance.listAttendance);
+
   return app;
 }
