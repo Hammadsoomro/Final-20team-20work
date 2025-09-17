@@ -1,47 +1,57 @@
 type UnreadMap = Record<string, number>;
 
-const KEY = "chat_unread_map";
 const EVT = "chat:unread-change";
+let map: UnreadMap = {};
 
-function load(): UnreadMap {
+// initialize from server
+(async function init() {
   try {
-    const raw = localStorage.getItem(KEY);
-    return raw ? (JSON.parse(raw) as UnreadMap) : {};
-  } catch {
-    return {};
-  }
-}
-function save(map: UnreadMap) {
-  localStorage.setItem(KEY, JSON.stringify(map));
-  window.dispatchEvent(new CustomEvent(EVT));
-}
+    const res = await fetch("/api/unread");
+    if (res.ok) {
+      map = await res.json();
+      window.dispatchEvent(new CustomEvent(EVT));
+    }
+  } catch {}
+})();
 
 export function dmRoom(a: string, b: string) {
   return `dm:${[a, b].sort().join(":")}`;
 }
 
 export function getUnread(roomId: string): number {
-  const map = load();
   return map[roomId] || 0;
 }
 export function getTotalUnread(): number {
-  const map = load();
   return Object.values(map).reduce((s, n) => s + n, 0);
 }
-export function incUnread(roomId: string) {
-  const map = load();
+export async function incUnread(roomId: string) {
+  try {
+    await fetch("/api/unread/inc", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ roomId }),
+    });
+  } catch {}
   map[roomId] = (map[roomId] || 0) + 1;
-  save(map);
+  window.dispatchEvent(new CustomEvent(EVT));
 }
-export function clearUnread(roomId: string) {
-  const map = load();
-  if (map[roomId]) {
-    delete map[roomId];
-    save(map);
-  }
+export async function clearUnread(roomId: string) {
+  try {
+    await fetch("/api/unread/clear", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ roomId }),
+    });
+  } catch {}
+  if (map[roomId]) delete map[roomId];
+  window.dispatchEvent(new CustomEvent(EVT));
 }
-export function clearAll() {
-  save({});
+export async function clearAll() {
+  try {
+    await fetch("/api/unread/clearAll", { method: "POST" });
+  } catch {}
+  map = {};
+  window.dispatchEvent(new CustomEvent(EVT));
 }
 export function onUnreadChange(fn: () => void) {
   const handler = () => fn();
