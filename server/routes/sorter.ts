@@ -75,7 +75,7 @@ export const distribute: RequestHandler = async (req, res) => {
   const now = Date.now();
   const users = await db
     .collection("users")
-    .find({ role: "seller", blocked: { $ne: true } })
+    .find({ role: { $in: ["seller", "salesman"] }, blocked: { $ne: true } })
     .project({ id: 1, name: 1 })
     .toArray();
 
