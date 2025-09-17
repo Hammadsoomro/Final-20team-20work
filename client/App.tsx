@@ -43,6 +43,7 @@ const App = () => (
               <Route path="chat" element={<TeamChat />} />
               <Route path="sorter" element={<NumberSorter />} />
               <Route path="sales" element={<Sales />} />
+              <Route path="attendance" element={<Attendance />} />
               <Route
                 path="admin"
                 element={
