@@ -35,7 +35,7 @@ export async function signupFull(
   lastName: string,
   phone: string,
   email: string,
-  password: string
+  password: string,
 ): Promise<User> {
   return await api<User>("/api/auth/signup", {
     method: "POST",
@@ -48,7 +48,6 @@ export async function login(email: string, password: string): Promise<User> {
     method: "POST",
     body: JSON.stringify({ email, password }),
   });
-
 }
 
 export async function logout(): Promise<void> {
@@ -68,7 +67,7 @@ export async function adminCreateMember(
     email: string;
     password?: string;
     role: Exclude<Role, "admin">;
-  }
+  },
 ): Promise<User> {
   return await api<User>("/api/admin/users", {
     method: "POST",
@@ -80,7 +79,10 @@ export async function adminRemoveMember(id: string): Promise<void> {
   await api(`/api/admin/users/${id}`, { method: "DELETE" });
 }
 
-export async function adminToggleBlock(id: string, blocked: boolean): Promise<void> {
+export async function adminToggleBlock(
+  id: string,
+  blocked: boolean,
+): Promise<void> {
   await api(`/api/admin/users/${id}/block`, {
     method: "PATCH",
     body: JSON.stringify({ blocked }),
@@ -90,7 +92,7 @@ export async function adminToggleBlock(id: string, blocked: boolean): Promise<vo
 export async function addSales(
   userId: string,
   todayDelta: number,
-  monthDelta: number
+  monthDelta: number,
 ): Promise<void> {
   await api(`/api/users/${userId}/sales`, {
     method: "POST",

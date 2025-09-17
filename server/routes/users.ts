@@ -44,7 +44,9 @@ export const signup: RequestHandler = async (req, res) => {
     // create session
     const db = await getDb();
     const token = crypto.randomUUID();
-    await db.collection("sessions").insertOne({ token, userId: id, createdAt: Date.now() });
+    await db
+      .collection("sessions")
+      .insertOne({ token, userId: id, createdAt: Date.now() });
     res.cookie("session", token, { httpOnly: true, sameSite: "lax" });
 
     const { passwordHash, ...safe } = user;
@@ -67,7 +69,9 @@ export const login: RequestHandler = async (req, res) => {
     // create session
     const db = await getDb();
     const token = crypto.randomUUID();
-    await db.collection("sessions").insertOne({ token, userId: u.id, createdAt: Date.now() });
+    await db
+      .collection("sessions")
+      .insertOne({ token, userId: u.id, createdAt: Date.now() });
     res.cookie("session", token, { httpOnly: true, sameSite: "lax" });
 
     const { passwordHash, ...safe } = u as any;
@@ -93,14 +97,19 @@ export const listUsers: RequestHandler = async (req, res) => {
 async function getUserFromReq(req: any) {
   try {
     const cookie = req.headers?.cookie || "";
-    const m = cookie.split(";").map((s:any)=>s.trim()).find((c:any)=>c.startsWith("session="));
+    const m = cookie
+      .split(";")
+      .map((s: any) => s.trim())
+      .find((c: any) => c.startsWith("session="));
     if (!m) return null;
     const token = m.split("=")[1];
     if (!token) return null;
     const db = await getDb();
     const s = await db.collection("sessions").findOne({ token });
     if (!s) return null;
-    const user = await (await usersCol()).findOne({ id: s.userId }, { projection: { passwordHash: 0 } });
+    const user = await (
+      await usersCol()
+    ).findOne({ id: s.userId }, { projection: { passwordHash: 0 } });
     return user;
   } catch {
     return null;
@@ -116,7 +125,10 @@ export const me: RequestHandler = async (req, res) => {
 export const logout: RequestHandler = async (req, res) => {
   try {
     const cookie = req.headers?.cookie || "";
-    const m = cookie.split(";").map((s:any)=>s.trim()).find((c:any)=>c.startsWith("session="));
+    const m = cookie
+      .split(";")
+      .map((s: any) => s.trim())
+      .find((c: any) => c.startsWith("session="));
     const token = m ? m.split("=")[1] : null;
     if (token) {
       const db = await getDb();
@@ -124,7 +136,7 @@ export const logout: RequestHandler = async (req, res) => {
     }
     res.clearCookie("session");
     res.json({ ok: true });
-  } catch (e:any) {
+  } catch (e: any) {
     res.status(400).json({ error: e.message || "Invalid" });
   }
 };
