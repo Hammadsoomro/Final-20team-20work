@@ -22,7 +22,7 @@ export const listPending: RequestHandler = async (_req, res) => {
   const col = db.collection("sorter_queue");
   const pending = await col
     .find({ status: { $ne: "sent" } })
-    .project({ _id: 0, value: 1, createdAt: 1 })
+    .project({ _id: 0, value: 1, createdAt: 1, status: 1 })
     .sort({ createdAt: 1 })
     .toArray();
   res.json({ pending: pending.map((d: any) => d.value) });
@@ -70,8 +70,9 @@ export const distribute: RequestHandler = async (req, res) => {
     perUser: z.number().int().min(1),
     target: z.enum(["online", "all"]).default("online"),
     timerSeconds: z.number().int().min(0).optional(),
+    selectedIds: z.array(z.string().min(1)).optional(),
   });
-  const { perUser, target, timerSeconds } = schema.parse(req.body);
+  const { perUser, target, timerSeconds, selectedIds } = schema.parse(req.body);
   const db = await getDb();
   const now = Date.now();
   const users = await db
@@ -81,22 +82,28 @@ export const distribute: RequestHandler = async (req, res) => {
     .toArray();
 
   let salesmanIds = users.map((u: any) => u.id);
+  const online = await db
+    .collection("presence")
+    .find({ lastSeen: { $gt: now - 30_000 } })
+    .project({ userId: 1, _id: 0 })
+    .toArray();
+  const onlineSet = new Set(online.map((o: any) => o.userId));
   if (target === "online") {
-    const online = await db
-      .collection("presence")
-      .find({ lastSeen: { $gt: now - 30_000 } })
-      .project({ userId: 1, _id: 0 })
-      .toArray();
-    const onlineSet = new Set(online.map((o: any) => o.userId));
     salesmanIds = salesmanIds.filter((id) => onlineSet.has(id));
+  }
+  // If selectedIds provided, restrict to that subset (still honoring availability filters)
+  if (selectedIds && selectedIds.length) {
+    const selectedSet = new Set(selectedIds);
+    salesmanIds = salesmanIds.filter((id) => selectedSet.has(id));
   }
   if (!salesmanIds.length)
     return res.status(400).json({ error: "No salesmen available" });
 
   const take = perUser * salesmanIds.length;
   const qcol = db.collection("sorter_queue");
+  // Only take strictly pending (avoid re-assigning items already assigned)
   const pending = await qcol
-    .find({ status: { $ne: "sent" } })
+    .find({ status: "pending" })
     .sort({ createdAt: 1 })
     .limit(take)
     .toArray();
@@ -202,6 +209,28 @@ export const claimAssignment: RequestHandler = async (req, res) => {
     );
     if (!a.value) return res.status(404).json({ error: "No assignments" });
     const values = a.value.values || [];
+
+    // Mark these queue items as sent and broadcast update so they are removed from queued list
+    try {
+      const qcol = db.collection("sorter_queue");
+      if (values.length) {
+        await qcol.updateMany(
+          { value: { $in: values } },
+          { $set: { status: "sent", sentAt: Date.now() } },
+        );
+        const fresh = await qcol
+          .find({ status: { $ne: "sent" } })
+          .project({ _id: 0, value: 1 })
+          .sort({ createdAt: 1 })
+          .toArray();
+        const io = await getIo();
+        io?.emit(
+          "sorter:update",
+          fresh.map((d: any) => d.value),
+        );
+      }
+    } catch {}
+
     const msgCol = db.collection("messages");
     const roomId = dmRoom("system", userId);
     const doc = { roomId, senderId: "system", text: (values || []).join("\n"), createdAt: Date.now() };
