@@ -25,7 +25,7 @@ export default function Sales() {
   const [category, setCategory] = useState<string>(categories[0]);
   const [loading, setLoading] = useState(false);
 
-  const canAdjust = currentUser?.role !== "seller";
+  const canAdjust = currentUser?.role !== "salesman";
 
   useEffect(() => {
     if (currentUser) refresh();
