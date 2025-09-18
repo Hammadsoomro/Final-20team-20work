@@ -26,7 +26,7 @@ export default function TeamChat() {
   const [online, setOnline] = useState<string[]>([]);
   const [filter, setFilter] = useState("");
   const [activeRoom, setActiveRoom] = useState<
-    { type: "team" } | { type: "dm"; userId: string; roomId: string }
+    { type: "team" } | { type: "dm"; userId: string; roomId: string } | { type: "room"; roomId: string; name?: string }
   >({ type: "team" });
   const activeRoomRef = useRef(activeRoom);
   const [messages, setMessages] = useState<Message[]>([]);
