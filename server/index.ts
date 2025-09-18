@@ -98,6 +98,7 @@ export async function createServer() {
   app.post("/api/sorter/distribute", sorter.distribute);
   app.get("/api/sorter/assignments", sorter.listAssignments);
   app.post("/api/sorter/claim", sorter.claimAssignment);
+  app.post("/api/sorter/clear", sorter.clearPending);
 
   // Attendance
   const attendance = await import("./routes/attendance");
