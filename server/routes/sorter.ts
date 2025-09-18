@@ -76,11 +76,11 @@ export const distribute: RequestHandler = async (req, res) => {
   const now = Date.now();
   const users = await db
     .collection("users")
-    .find({ role: { $in: ["seller", "salesman"] }, blocked: { $ne: true } })
+    .find({ role: "salesman", blocked: { $ne: true } })
     .project({ id: 1, name: 1 })
     .toArray();
 
-  let sellerIds = users.map((u: any) => u.id);
+  let salesmanIds = users.map((u: any) => u.id);
   if (target === "online") {
     const online = await db
       .collection("presence")
@@ -88,12 +88,12 @@ export const distribute: RequestHandler = async (req, res) => {
       .project({ userId: 1, _id: 0 })
       .toArray();
     const onlineSet = new Set(online.map((o: any) => o.userId));
-    sellerIds = sellerIds.filter((id) => onlineSet.has(id));
+    salesmanIds = salesmanIds.filter((id) => onlineSet.has(id));
   }
-  if (!sellerIds.length)
-    return res.status(400).json({ error: "No sellers available" });
+  if (!salesmanIds.length)
+    return res.status(400).json({ error: "No salesmen available" });
 
-  const take = perUser * sellerIds.length;
+  const take = perUser * salesmanIds.length;
   const qcol = db.collection("sorter_queue");
   const pending = await qcol
     .find({ status: { $ne: "sent" } })
