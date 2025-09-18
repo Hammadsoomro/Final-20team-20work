@@ -169,6 +169,18 @@ export default function AutoDistribution() {
             <Button variant="secondary" onClick={refreshQueue}>
               Refresh
             </Button>
+            <Button
+              variant="destructive"
+              onClick={async () => {
+                if (!confirm('Clear queued numbers? This will remove all pending items.')) return;
+                try {
+                  await fetch('/api/sorter/clear', { method: 'POST' });
+                } catch {}
+                await refreshQueue();
+              }}
+            >
+              Clear Queue
+            </Button>
           </div>
         </div>
       </div>
