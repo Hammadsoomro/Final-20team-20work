@@ -46,8 +46,28 @@ export default function NumberSorter() {
     if (!socket) return;
     const onUpdate = (list: string[]) => setPending(list);
     socket.on("sorter:update", onUpdate);
+
+    try {
+      socket.emit("chat:join", { roomId: "sorter" });
+    } catch {}
+
+    const onMessage = (msg: any) => {
+      if (!msg || msg.roomId !== "sorter") return;
+      try {
+        const p = JSON.parse(msg.text);
+        if (p && p.type === "sorter:announce") {
+          setSorterAnnouncement(p);
+        }
+      } catch {
+        // ignore
+      }
+    };
+
+    socket.on("chat:message", onMessage);
+
     return () => {
       socket.off("sorter:update", onUpdate);
+      socket.off("chat:message", onMessage);
     };
   }, [socket]);
 
