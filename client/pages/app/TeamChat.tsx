@@ -398,8 +398,8 @@ export default function TeamChat() {
 
       {/* Right chat panel */}
       <Card className="flex min-h-[60vh] flex-1 flex-col border bg-white">
-        <div className="flex items-center gap-3 border-b p-4">
-          <div className="inline-flex h-10 w-10 items-center justify-center rounded-md bg-gradient-to-r from-blue-600 to-indigo-600 text-white">
+        <div className={`flex items-center gap-3 border-b p-4 ${activeRoom.type === 'team' ? 'bg-indigo-50' : activeRoom.type === 'room' && activeRoom.roomId === 'sorter' ? 'bg-emerald-50' : ''}`}>
+          <div className={`inline-flex h-10 w-10 items-center justify-center rounded-md ${activeRoom.type === 'team' ? 'bg-indigo-600 text-white' : 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white'}`}>
             <svg
               className="h-5 w-5"
               viewBox="0 0 24 24"
