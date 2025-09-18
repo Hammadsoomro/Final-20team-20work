@@ -327,3 +327,18 @@ export const assignToUser: RequestHandler = async (req, res) => {
     res.status(400).json({ error: e.message || 'Invalid' });
   }
 };
+
+export const listRecent: RequestHandler = async (_req, res) => {
+  try {
+    const db = await getDb();
+    const rows = await db
+      .collection('sorter_assignments')
+      .find({})
+      .sort({ createdAt: -1 })
+      .limit(50)
+      .toArray();
+    res.json({ recent: rows.map((r: any) => ({ userId: r.userId, values: r.values, status: r.status, createdAt: r.createdAt })) });
+  } catch (e: any) {
+    res.status(400).json({ error: e.message || 'Invalid' });
+  }
+};
