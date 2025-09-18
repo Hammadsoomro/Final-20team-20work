@@ -92,7 +92,7 @@ export default function TeamChat() {
               if (user?.role === "salesman") {
                 socket.emit("chat:join", { roomId: "sorter" });
                 setActiveRoom({ type: "room", roomId: "sorter", name: "Sorter" });
-                requestNumbers(typeof obj.timerSeconds === "number" ? obj.timerSeconds : undefined);
+                requestNumbers();
               }
             }
           }
