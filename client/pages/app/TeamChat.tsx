@@ -317,9 +317,14 @@ export default function TeamChat() {
             </button>
           ))}
         </div>
-        <div className="border-t bg-gray-50 p-3 text-xs text-gray-600">
+        <div className="border-t bg-gray-50 text-xs text-gray-600" style={{ minHeight: 0, width: 'auto', height: 'auto', flexGrow: 0, alignSelf: 'center', display: 'flex', flexDirection: 'column', justifyContent: 'flex-start', alignItems: 'flex-start', margin: '-19px 0 0 4px' }}>
           <div>Total Contacts: {totals.total}</div>
-          <div className="mt-1">Online: {totals.online}</div>
+          <div className="mt-1">
+            <div style={{ marginTop: '14px' }}>
+              Online:
+            </div>
+            {totals.online}
+          </div>
           <div className="mt-1">Pinned: {totals.pinned}</div>
         </div>
       </div>
