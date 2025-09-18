@@ -288,7 +288,7 @@ function Overview({
               </div>
             </div>
           ) : (
-            <div className="text-muted-foreground">No seller yet</div>
+            <div className="text-muted-foreground">No salesman yet</div>
           )}
         </CardContent>
       </Card>
