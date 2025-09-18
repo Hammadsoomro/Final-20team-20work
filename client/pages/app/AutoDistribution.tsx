@@ -23,9 +23,7 @@ export default function AutoDistribution() {
 
   const [perUser, setPerUser] = useState(3);
   const [timerSeconds, setTimerSeconds] = useState(180);
-  const [selectionMode, setSelectionMode] = useState<"all" | "selected">(
-    "all",
-  );
+  const [selectionMode, setSelectionMode] = useState<"all" | "selected">("all");
   const [onlineIds, setOnlineIds] = useState<string[]>([]);
   const [salesmen, setSalesmen] = useState<
     { id: string; name: string; email?: string }[]
@@ -80,7 +78,11 @@ export default function AutoDistribution() {
       const allUsers = (await ru.json()) as any[];
       const list = allUsers
         .filter((u) => u.role === "salesman")
-        .map((u) => ({ id: u.id as string, name: u.name as string, email: u.email as string }))
+        .map((u) => ({
+          id: u.id as string,
+          name: u.name as string,
+          email: u.email as string,
+        }))
         .filter((u) => ids.includes(u.id));
       setSalesmen(list);
     } catch {}
@@ -152,15 +154,21 @@ export default function AutoDistribution() {
               </svg>
             </div>
             <div className="ml-3">
-              <h2 className="text-2xl font-bold text-gray-900">Auto Distribution</h2>
-              <p className="text-gray-600">Numbers added from Sorter queue and ready to distribute</p>
+              <h2 className="text-2xl font-bold text-gray-900">
+                Auto Distribution
+              </h2>
+              <p className="text-gray-600">
+                Numbers added from Sorter queue and ready to distribute
+              </p>
             </div>
           </div>
           <div className="flex items-center gap-2">
             <div className="rounded-md bg-gray-100 px-2 py-1 text-xs font-medium text-gray-700">
               Total queued: {pending.length}
             </div>
-            <Button variant="secondary" onClick={refreshQueue}>Refresh</Button>
+            <Button variant="secondary" onClick={refreshQueue}>
+              Refresh
+            </Button>
           </div>
         </div>
       </div>
@@ -199,7 +207,9 @@ export default function AutoDistribution() {
           </div>
 
           <div className="flex items-center gap-3">
-            <label className="text-sm font-medium text-gray-700">Recipients</label>
+            <label className="text-sm font-medium text-gray-700">
+              Recipients
+            </label>
             <div className="flex items-center gap-2">
               <button
                 className={`h-8 rounded border px-3 text-sm ${selectionMode === "all" ? "bg-gray-900 text-white" : "bg-white"}`}
@@ -222,20 +232,29 @@ export default function AutoDistribution() {
                   </DialogHeader>
                   <div className="max-h-[300px] overflow-auto space-y-2">
                     {salesmen.length === 0 ? (
-                      <div className="text-sm text-gray-500">No online salesmen</div>
+                      <div className="text-sm text-gray-500">
+                        No online salesmen
+                      </div>
                     ) : (
                       salesmen.map((u) => (
-                        <label key={u.id} className="flex items-center gap-2 text-sm">
+                        <label
+                          key={u.id}
+                          className="flex items-center gap-2 text-sm"
+                        >
                           <Checkbox
                             checked={selectedIds.includes(u.id)}
                             onCheckedChange={(v) => {
                               setSelectedIds((prev) =>
-                                v ? [...new Set([...prev, u.id])] : prev.filter((x) => x !== u.id),
+                                v
+                                  ? [...new Set([...prev, u.id])]
+                                  : prev.filter((x) => x !== u.id),
                               );
                             }}
                           />
                           <span>{u.name}</span>
-                          <span className="ml-auto text-xs text-gray-400">{u.email}</span>
+                          <span className="ml-auto text-xs text-gray-400">
+                            {u.email}
+                          </span>
                         </label>
                       ))
                     )}
@@ -246,7 +265,10 @@ export default function AutoDistribution() {
           </div>
 
           <div className="ml-auto">
-            <Button onClick={distributeNow} className="bg-indigo-600 text-white">
+            <Button
+              onClick={distributeNow}
+              className="bg-indigo-600 text-white"
+            >
               Announce & Prepare
             </Button>
           </div>
@@ -274,7 +296,9 @@ export default function AutoDistribution() {
               <path d="M12 18h.01" />
               <path d="M8 18h.01" />
             </svg>
-            <span className="ml-3 font-medium text-gray-900">Queued Numbers</span>
+            <span className="ml-3 font-medium text-gray-900">
+              Queued Numbers
+            </span>
           </div>
           <div className="text-sm text-gray-700">
             {loading ? "Loading..." : `${pending.length} total`}
@@ -295,7 +319,10 @@ export default function AutoDistribution() {
                   </div>
                 ))
               ) : (
-                <p className="italic text-gray-500">Numbers you add from Sorter → Add to Queue will appear here and accumulate.</p>
+                <p className="italic text-gray-500">
+                  Numbers you add from Sorter → Add to Queue will appear here
+                  and accumulate.
+                </p>
               )}
             </div>
           </div>

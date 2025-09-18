@@ -127,8 +127,18 @@ export const distribute: RequestHandler = async (req, res) => {
   const assignCol = db.collection("sorter_assignments");
   const ops = assignments
     .filter((a) => a.values.length)
-    .map((a) => ({ insertOne: { document: { userId: a.userId, values: a.values, status: "pending", createdAt: Date.now() } } }));
-  if (ops.length) await assignCol.bulkWrite(ops, { ordered: false }).catch(() => {});
+    .map((a) => ({
+      insertOne: {
+        document: {
+          userId: a.userId,
+          values: a.values,
+          status: "pending",
+          createdAt: Date.now(),
+        },
+      },
+    }));
+  if (ops.length)
+    await assignCol.bulkWrite(ops, { ordered: false }).catch(() => {});
 
   const remaining = await qcol.countDocuments({ status: { $ne: "sent" } });
 
@@ -184,7 +194,8 @@ async function getUserIdFromReq(req: any) {
 
 export const listAssignments: RequestHandler = async (req, res) => {
   try {
-    const userId = (req.query.userId as string) || (await getUserIdFromReq(req));
+    const userId =
+      (req.query.userId as string) || (await getUserIdFromReq(req));
     if (!userId) return res.status(400).json({ error: "userId required" });
     const db = await getDb();
     const rows = await db
@@ -202,11 +213,13 @@ export const claimAssignment: RequestHandler = async (req, res) => {
     const schema = z.object({ userId: z.string().min(1) });
     const { userId } = schema.parse(req.body);
     const db = await getDb();
-    const a = await db.collection("sorter_assignments").findOneAndUpdate(
-      { userId, status: "pending" },
-      { $set: { status: "sent", sentAt: Date.now() } },
-      { returnDocument: "after" },
-    );
+    const a = await db
+      .collection("sorter_assignments")
+      .findOneAndUpdate(
+        { userId, status: "pending" },
+        { $set: { status: "sent", sentAt: Date.now() } },
+        { returnDocument: "after" },
+      );
     if (!a.value) return res.status(404).json({ error: "No assignments" });
     const values = a.value.values || [];
 
@@ -233,7 +246,12 @@ export const claimAssignment: RequestHandler = async (req, res) => {
 
     const msgCol = db.collection("messages");
     const roomId = dmRoom("system", userId);
-    const doc = { roomId, senderId: "system", text: (values || []).join("\n"), createdAt: Date.now() };
+    const doc = {
+      roomId,
+      senderId: "system",
+      text: (values || []).join("\n"),
+      createdAt: Date.now(),
+    };
     await msgCol.insertOne(doc as any);
     const io = await getIo();
     io?.to(roomId).emit("chat:message", doc);

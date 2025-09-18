@@ -210,7 +210,8 @@ export default function TeamChat() {
       : contacts.find((c) => c.id === activeRoom.userId)?.email || "";
 
   const sorterAnnounce = useMemo(() => {
-    if (!(activeRoom.type === "room" && activeRoom.roomId === "sorter")) return null;
+    if (!(activeRoom.type === "room" && activeRoom.roomId === "sorter"))
+      return null;
     for (let i = messages.length - 1; i >= 0; i--) {
       const m = messages[i];
       try {
@@ -237,7 +238,8 @@ export default function TeamChat() {
 
   useEffect(() => {
     return () => {
-      if (countdownRef.current) window.clearInterval(countdownRef.current as any);
+      if (countdownRef.current)
+        window.clearInterval(countdownRef.current as any);
     };
   }, []);
 
@@ -249,7 +251,8 @@ export default function TeamChat() {
       setCountdown((c) => {
         if (c === null) return c;
         if (c <= 1) {
-          if (countdownRef.current) window.clearInterval(countdownRef.current as any);
+          if (countdownRef.current)
+            window.clearInterval(countdownRef.current as any);
           countdownRef.current = null;
           fetch("/api/sorter/claim", {
             method: "POST",
@@ -434,7 +437,9 @@ export default function TeamChat() {
                 onClick={requestNumbers}
                 className="bg-emerald-600 hover:bg-emerald-700 text-white"
               >
-                {countdown !== null ? `Requesting... ${countdown}s` : "Request for numbers"}
+                {countdown !== null
+                  ? `Requesting... ${countdown}s`
+                  : "Request for numbers"}
               </Button>
             </div>
           </div>

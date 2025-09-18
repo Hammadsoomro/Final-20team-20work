@@ -19,9 +19,12 @@ export default function Attendance() {
   async function fetchNames() {
     try {
       const ownerId = user?.ownerId || user?.id;
-      const r = await fetch(`/api/users?ownerId=${encodeURIComponent(ownerId)}`, {
-        credentials: "include",
-      });
+      const r = await fetch(
+        `/api/users?ownerId=${encodeURIComponent(ownerId)}`,
+        {
+          credentials: "include",
+        },
+      );
       if (!r.ok) return;
       const list = await r.json();
       const map: Record<string, string> = {};
@@ -100,7 +103,9 @@ export default function Attendance() {
                       <tr key={r._id} className="border-t">
                         <td className="px-3 py-2">{date}</td>
                         <td className="px-3 py-2">{time}</td>
-                        <td className="px-3 py-2">{names[r.userId] || r.userId}</td>
+                        <td className="px-3 py-2">
+                          {names[r.userId] || r.userId}
+                        </td>
                       </tr>
                     );
                   })}

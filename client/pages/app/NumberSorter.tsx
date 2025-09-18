@@ -75,7 +75,9 @@ export default function NumberSorter() {
               </svg>
             </div>
             <div className="ml-3">
-              <h2 className="text-2xl font-bold text-gray-900">Number Sorter</h2>
+              <h2 className="text-2xl font-bold text-gray-900">
+                Number Sorter
+              </h2>
               <p className="text-gray-600">Auto-sort and remove duplicates</p>
             </div>
           </div>
@@ -105,7 +107,9 @@ export default function NumberSorter() {
                   <path d="M12 18h.01" />
                   <path d="M8 18h.01" />
                 </svg>
-                <span className="ml-3 font-medium text-gray-900">Number Input</span>
+                <span className="ml-3 font-medium text-gray-900">
+                  Number Input
+                </span>
               </div>
               <div className="flex items-center text-sm text-gray-700">
                 <span>Raw Lines: {stats.raw}</span>
@@ -116,7 +120,9 @@ export default function NumberSorter() {
             <div className="flex flex-1">
               <div className="flex flex-1 flex-col border-r">
                 <div className="border-b bg-gray-50 p-3">
-                  <h4 className="text-sm font-medium text-gray-700">Raw Input</h4>
+                  <h4 className="text-sm font-medium text-gray-700">
+                    Raw Input
+                  </h4>
                 </div>
                 <Textarea
                   placeholder="Enter numbers here, one per line..."
@@ -127,7 +133,9 @@ export default function NumberSorter() {
               </div>
               <div className="flex flex-1 flex-col">
                 <div className="border-b bg-emerald-50 p-3">
-                  <h4 className="text-sm font-medium text-emerald-700">Deduplicated (first 15 words)</h4>
+                  <h4 className="text-sm font-medium text-emerald-700">
+                    Deduplicated (first 15 words)
+                  </h4>
                 </div>
                 <div className="flex-1 overflow-auto">
                   <div className="flex">
@@ -144,7 +152,9 @@ export default function NumberSorter() {
                           </div>
                         ))
                       ) : (
-                        <p className="italic text-gray-500">Unique numbers will appear here...</p>
+                        <p className="italic text-gray-500">
+                          Unique numbers will appear here...
+                        </p>
                       )}
                     </div>
                   </div>
