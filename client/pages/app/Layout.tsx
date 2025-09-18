@@ -24,7 +24,8 @@ import {
   Shield,
   SortAsc,
   ListOrdered,
-} from "lucide-react";
+  UserPlus,
+  } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { logout } from "@/lib/auth";
 import { getTotalUnread, onUnreadChange } from "@/lib/chatState";
