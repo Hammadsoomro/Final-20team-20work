@@ -311,6 +311,14 @@ export const assignToUser: RequestHandler = async (req, res) => {
     const io = await getIo();
     io?.to(roomId).emit('chat:message', doc);
 
+    // Insert assignment record for history
+    try {
+      const assignCol = db.collection('sorter_assignments');
+      await assignCol.insertOne({ userId, values, status: 'sent', createdAt: Date.now() });
+    } catch (e) {
+      // ignore
+    }
+
     const fresh = await qcol.find({ status: { $ne: 'sent' } }).project({ _id: 0, value: 1 }).sort({ createdAt: 1 }).toArray();
     io?.emit('sorter:update', fresh.map((d: any) => d.value));
 
