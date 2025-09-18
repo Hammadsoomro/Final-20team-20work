@@ -347,18 +347,18 @@ export default function TeamChat() {
           </Button>
 
           <Button
-            className="mt-2 w-full justify-start border bg-white relative"
+            className={`mt-2 w-full justify-start relative ${activeRoom.type === 'room' && activeRoom.roomId === 'sorter' ? 'bg-emerald-50 ring-2 ring-emerald-200' : 'border bg-white'}`}
             onClick={() => {
               if (socket) socket.emit("chat:join", { roomId: "sorter" });
               setActiveRoom({ type: "room", roomId: "sorter", name: "Sorter" });
               clearUnread("sorter");
             }}
           >
-            <div className="mr-2 inline-flex h-10 w-10 items-center justify-center rounded-full bg-gray-100 text-gray-700">
+            <div className={`mr-2 inline-flex h-10 w-10 items-center justify-center rounded-full ${activeRoom.type === 'room' && activeRoom.roomId === 'sorter' ? 'bg-emerald-100 text-emerald-700' : 'bg-gray-100 text-gray-700'}`}>
               S
             </div>
             <div className="text-left">
-              <div className="font-medium">Sorter</div>
+              <div className={`font-medium ${activeRoom.type === 'room' && activeRoom.roomId === 'sorter' ? 'text-emerald-800' : ''}`}>Sorter</div>
               <div className="text-xs text-gray-400">Auto distribution</div>
             </div>
             {getUnread("sorter") > 0 && (
