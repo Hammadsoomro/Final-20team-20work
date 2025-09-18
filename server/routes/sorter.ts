@@ -38,6 +38,7 @@ export const addLines: RequestHandler = async (req, res) => {
   const col = db.collection("sorter_queue");
   const now = Date.now();
   if (norm.length) {
+    console.log("[sorter] addLines inserting", norm.length, "lines");
     await col.createIndex({ value: 1 }, { unique: true }).catch(() => {});
     const ops = norm.map((v) => ({
       updateOne: {
@@ -107,7 +108,10 @@ export const distribute: RequestHandler = async (req, res) => {
     .sort({ createdAt: 1 })
     .limit(take)
     .toArray();
-  if (!pending.length) return res.json({ assignments: [], remaining: 0 });
+  if (!pending.length) {
+    console.log("[sorter] distribute: no pending items");
+    return res.json({ assignments: [], remaining: 0 });
+  }
 
   // Create assignments for users but don't send immediately. Salesmen will claim when their timer completes.
   const assignments: { userId: string; values: string[] }[] = salesmanIds.map(
@@ -149,6 +153,7 @@ export const distribute: RequestHandler = async (req, res) => {
     .toArray();
 
   const io = await getIo();
+  console.log("[sorter] distribute: assigned", assignments.map((a) => ({ userId: a.userId, count: a.values.length })).filter(a=>a.count>0));
   io?.emit(
     "sorter:update",
     fresh.map((d: any) => d.value),
@@ -176,6 +181,28 @@ export const distribute: RequestHandler = async (req, res) => {
   }
 
   res.json({ assignments, remaining });
+};
+
+export const clearPending: RequestHandler = async (_req, res) => {
+  try {
+    const db = await getDb();
+    const col = db.collection("sorter_queue");
+    const rem = await col.deleteMany({ status: { $ne: "sent" } });
+    const fresh = await col
+      .find({ status: { $ne: "sent" } })
+      .project({ _id: 0, value: 1 })
+      .sort({ createdAt: 1 })
+      .toArray();
+    const io = await getIo();
+    io?.emit(
+      "sorter:update",
+      fresh.map((d: any) => d.value),
+    );
+    console.log("[sorter] clearPending removed", rem.deletedCount);
+    res.json({ ok: true, removed: rem.deletedCount ?? 0 });
+  } catch (e: any) {
+    res.status(400).json({ error: e.message || "Invalid" });
+  }
 };
 
 async function getUserIdFromReq(req: any) {
