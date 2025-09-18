@@ -20,6 +20,7 @@ import Settings from "@/pages/app/Settings";
 import Attendance from "@/pages/app/Attendance";
 import RequireAdmin from "@/pages/app/RequireAdmin";
 import AutoDistribution from "@/pages/app/AutoDistribution";
+import AssignToMembers from "@/pages/app/AssignToMembers";
 
 const queryClient = new QueryClient();
 
