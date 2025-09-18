@@ -396,7 +396,7 @@ export default function TeamChat() {
                 </div>
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center justify-between">
-                    <div className="truncate font-medium text-gray-900">
+                    <div className={`truncate font-medium ${activeRoom.type === 'dm' && activeRoom.userId === c.id ? 'text-indigo-900' : 'text-gray-900'}`}>
                       {c.name}
                     </div>
                     <span className="text-[10px] uppercase text-gray-400">
