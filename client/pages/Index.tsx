@@ -100,7 +100,7 @@ export default function Index() {
             />
             <Feature
               title="Role-based Access"
-              desc="Admin, Scrapper, Seller permissions baked-in from day one."
+              desc="Admin, Scrapper, Salesman permissions baked-in from day one."
             />
           </div>
         </section>
