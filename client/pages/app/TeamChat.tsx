@@ -198,13 +198,14 @@ export default function TeamChat() {
   return (
     <div className="flex h-full min-h-0 gap-4" style={{ marginLeft: '-4px' }}>
       {/* Left contacts panel */}
-      <div className="w-64 shrink-0 rounded-lg border bg-white">
+      <div className="w-64 shrink-0 rounded-lg border bg-white flex flex-col h-full">
         <div className="flex items-center justify-between border-b p-4">
           <div className="flex items-center gap-2">
             <div className="h-8 w-8 rounded-md bg-gradient-to-r from-indigo-600 to-purple-600" />
             <div className="font-bold text-gray-900">Team-Work</div>
           </div>
         </div>
+
         <div className="p-4 border-b">
           <div className="relative">
             <Input
@@ -225,6 +226,7 @@ export default function TeamChat() {
             </svg>
           </div>
         </div>
+
         <div className="border-b p-2">
           <Button
             className="w-full justify-start bg-gradient-to-r from-indigo-600 to-purple-600 text-white relative"
@@ -274,7 +276,8 @@ export default function TeamChat() {
             )}
           </Button>
         </div>
-        <div className="h-[44vh] overflow-y-auto p-2">
+
+        <div className="flex-1 overflow-y-auto p-2">
           {filtered.map((c) => (
             <button
               key={c.id}
@@ -317,6 +320,7 @@ export default function TeamChat() {
             </button>
           ))}
         </div>
+
         <div className="border-t bg-gray-50 text-xs text-gray-600" style={{ minHeight: 0, width: 'auto', height: 'auto', flexGrow: 0, alignSelf: 'center', display: 'flex', flexDirection: 'column', justifyContent: 'flex-start', alignItems: 'flex-start', margin: '-19px 0 0 4px' }}>
           <div>Total Contacts: {totals.total}</div>
           <div className="mt-1">
