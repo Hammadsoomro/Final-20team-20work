@@ -18,16 +18,26 @@ export default function NumberSorter() {
       .map((s) => s.trim())
       .filter(Boolean);
 
-    // Dedupe by full line
-    const uniqLines = Array.from(new Set(lines));
+    function keyForLine(line: string) {
+      const words = line.split(/\s+/).filter(Boolean);
+      return words.slice(0, 15).join(" ").toLowerCase();
+    }
 
-    const sorted = uniqLines.sort((a, b) => a.localeCompare(b));
+    const byKey = new Map<string, string>();
+    for (const line of lines) {
+      const k = keyForLine(line);
+      if (!byKey.has(k)) byKey.set(k, line);
+    }
+
+    const uniqByKey = Array.from(byKey.entries())
+      .sort((a, b) => a[0].localeCompare(b[0]))
+      .map(([, v]) => v);
 
     return {
       raw: lines.length,
-      unique: uniqLines.length,
-      dup: Math.max(lines.length - uniqLines.length, 0),
-      sorted,
+      unique: uniqByKey.length,
+      dup: Math.max(lines.length - uniqByKey.length, 0),
+      sorted: uniqByKey,
     };
   }, [raw]);
 
