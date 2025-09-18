@@ -64,9 +64,10 @@ export default function TeamChat() {
       }
 
       const current = activeRoomRef.current;
-      const isCurrent =
+        const isCurrent =
         (current.type === "team" && msg.roomId === "team") ||
-        (current.type === "dm" && msg.roomId === current.roomId);
+        (current.type === "dm" && msg.roomId === current.roomId) ||
+        (current.type === "room" && msg.roomId === current.roomId);
 
       if (isCurrent) {
         setMessages((m) => [...m, msg]);
