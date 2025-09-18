@@ -400,21 +400,63 @@ export default function TeamChat() {
       <Card className="flex min-h-[60vh] flex-1 flex-col border bg-white">
         <div className={`flex items-center gap-3 border-b p-4 ${activeRoom.type === 'team' ? 'bg-indigo-50' : activeRoom.type === 'room' && activeRoom.roomId === 'sorter' ? 'bg-emerald-50' : ''}`}>
           <div className={`inline-flex h-10 w-10 items-center justify-center rounded-md ${activeRoom.type === 'team' ? 'bg-indigo-600 text-white' : 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white'}`}>
-            <svg
-              className="h-5 w-5"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-            >
-              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
-            </svg>
+              <svg
+                className="h-5 w-5"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+              >
+                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+              </svg>
+            </div>
+            <div className="flex-1">
+              <div className="font-semibold text-gray-900">{title}</div>
+              <div className="text-sm text-gray-500">{subtitle}</div>
+            </div>
+            {activeRoom.type === 'room' && activeRoom.roomId === 'sorter' && (
+              <div className="ml-3">
+                <Button
+                  onClick={async () => {
+                    if (!user) return;
+                    try {
+                      const res = await fetch('/api/sorter/claim', {
+                        method: 'POST',
+                        credentials: 'include',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ userId: user.id }),
+                      });
+                      if (!res.ok) return;
+                      const data = await res.json();
+                      const values = data?.values || [];
+                      if (values.length) {
+                        const doc = {
+                          roomId: 'sorter',
+                          senderId: 'system',
+                          text: (values || []).join('\n'),
+                          createdAt: Date.now(),
+                        } as any;
+                        // append locally for immediate feedback
+                        setMessages((m) => [...m, doc]);
+                        // persist in server messages for sorter room
+                        try {
+                          await fetch(`/api/chat/sorter/messages`, {
+                            method: 'POST',
+                            credentials: 'include',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ senderId: 'system', text: doc.text }),
+                          });
+                        } catch {}
+                      }
+                    } catch {}
+                  }}
+                  className="bg-emerald-600 hover:bg-emerald-700 text-white"
+                >
+                  Request for numbers
+                </Button>
+              </div>
+            )}
           </div>
-          <div className="flex-1">
-            <div className="font-semibold text-gray-900">{title}</div>
-            <div className="text-sm text-gray-500">{subtitle}</div>
-          </div>
-        </div>
         <div
           ref={listRef}
           className="flex-1 overflow-y-auto bg-gradient-to-b from-white to-gray-50 p-4"
