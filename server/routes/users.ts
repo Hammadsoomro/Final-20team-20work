@@ -2,7 +2,6 @@ import { RequestHandler } from "express";
 import { usersCol, getDb } from "../db";
 import bcrypt from "bcryptjs";
 import { z } from "zod";
-import { RequestHandler } from "express";
 
 const signupSchema = z.object({
   firstName: z.string().min(1),
