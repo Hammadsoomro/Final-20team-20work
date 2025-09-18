@@ -184,7 +184,7 @@ export default function AppLayout() {
             </div>
           </div>
         </div>
-        <div className="container py-6">
+        <div className="container py-6" style={{ maxHeight: 'calc(100vh - 56px)', overflow: 'auto' }}>
           <Outlet />
         </div>
       </SidebarInset>
