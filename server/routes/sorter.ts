@@ -287,3 +287,35 @@ export const claimAssignment: RequestHandler = async (req, res) => {
     res.status(400).json({ error: e.message || "Invalid" });
   }
 };
+
+// New: assign specific number of pending lines directly to a given user
+export const assignToUser: RequestHandler = async (req, res) => {
+  try {
+    const schema = z.object({ userId: z.string().min(1), count: z.number().int().min(1).max(100).optional() });
+    const { userId, count } = schema.parse(req.body);
+    const take = count || 3;
+    const db = await getDb();
+    const qcol = db.collection('sorter_queue');
+    const pending = await qcol.find({ status: 'pending' }).sort({ createdAt: 1 }).limit(take).toArray();
+    if (!pending.length) return res.json({ values: [] });
+    const values = pending.map((p: any) => p.value as string);
+    const ids = pending.map((p: any) => p._id);
+    await qcol.updateMany({ _id: { $in: ids } }, { $set: { status: 'sent', sentAt: Date.now() } });
+
+    // persist DM message to the user
+    const msgCol = db.collection('messages');
+    const roomId = dmRoom('system', userId);
+    const doc = { roomId, senderId: 'system', text: values.join('\n'), createdAt: Date.now() } as any;
+    await msgCol.insertOne(doc);
+
+    const io = await getIo();
+    io?.to(roomId).emit('chat:message', doc);
+
+    const fresh = await qcol.find({ status: { $ne: 'sent' } }).project({ _id: 0, value: 1 }).sort({ createdAt: 1 }).toArray();
+    io?.emit('sorter:update', fresh.map((d: any) => d.value));
+
+    res.json({ values });
+  } catch (e: any) {
+    res.status(400).json({ error: e.message || 'Invalid' });
+  }
+};
