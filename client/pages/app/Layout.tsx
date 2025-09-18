@@ -118,6 +118,15 @@ export default function AppLayout() {
                         <span>Auto Distribution</span>
                       </SidebarMenuButton>
                     </SidebarMenuItem>
+                    <SidebarMenuItem>
+                      <SidebarMenuButton
+                        isActive={isActive("/app/assign-members")}
+                        onClick={() => navigate("/app/assign-members")}
+                      >
+                        <UserPlus />
+                        <span>Assign Members</span>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
                   </>
                 )}
                 <SidebarMenuItem>
