@@ -72,6 +72,11 @@ export const signup: RequestHandler = async (req, res) => {
       .collection("sessions")
       .insertOne({ token, userId: id, createdAt: Date.now() });
     res.cookie("session", token, { httpOnly: true, sameSite: "lax" });
+    // also issue JWT (7 days)
+    try {
+      const jwt = signJwt({ userId: id }, 7 * 24 * 60 * 60 * 1000);
+      res.cookie('jwt', jwt, { httpOnly: true, sameSite: 'lax', maxAge: 7 * 24 * 60 * 60 * 1000 });
+    } catch {}
 
     const { passwordHash, ...safe } = user;
     res.json(safe);
