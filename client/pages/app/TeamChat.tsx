@@ -240,51 +240,19 @@ export default function TeamChat() {
     return null;
   }, [messages, activeRoom]);
 
-  const savedTimer = useMemo(() => {
-    try {
-      const raw = localStorage.getItem("autoDist.settings");
-      if (!raw) return 180;
-      const s = JSON.parse(raw);
-      return typeof s.timerSeconds === "number" ? s.timerSeconds : 180;
-    } catch {
-      return 180;
-    }
-  }, [activeRoom]);
-
-  const [countdown, setCountdown] = useState<number | null>(null);
-  const countdownRef = useRef<number | null>(null);
+  // Remove timer behaviour: immediately claim numbers on request
   const lastAnnounceRef = useRef<number>(0);
 
-  useEffect(() => {
-    return () => {
-      if (countdownRef.current)
-        window.clearInterval(countdownRef.current as any);
-    };
-  }, []);
-
-  async function requestNumbers(seconds?: number) {
+  async function requestNumbers() {
     if (!user) return;
-    if (countdownRef.current) window.clearInterval(countdownRef.current as any);
-    const total = typeof seconds === "number" ? seconds : savedTimer || 0;
-    setCountdown(total);
-    countdownRef.current = window.setInterval(() => {
-      setCountdown((c) => {
-        if (c === null) return c;
-        if (c <= 1) {
-          if (countdownRef.current)
-            window.clearInterval(countdownRef.current as any);
-          countdownRef.current = null;
-          fetch("/api/sorter/claim", {
-            method: "POST",
-            credentials: "include",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ userId: user.id }),
-          }).catch(() => {});
-          return null;
-        }
-        return c - 1;
+    try {
+      await fetch("/api/sorter/claim", {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId: user.id }),
       });
-    }, 1000) as any;
+    } catch {}
   }
 
   return (
