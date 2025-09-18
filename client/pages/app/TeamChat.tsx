@@ -494,7 +494,7 @@ export default function TeamChat() {
                       </div>
                     )}
                     <div
-                      className={`max-w-[70%] rounded-md px-3 py-2 text-sm ${isMe ? "ml-auto bg-indigo-600 text-white" : "bg-gray-100 text-gray-900"}`}
+                      className={`max-w-[70%] rounded-md px-3 py-2 text-sm ${isMe ? 'ml-auto bg-indigo-600 text-white' : (m.roomId === 'sorter' && m.senderId === 'system') ? 'bg-emerald-100 text-emerald-900 border border-emerald-200' : 'bg-gray-100 text-gray-900'}`}
                     >
                       <div>{m.text}</div>
                       <div className="mt-1 text-[10px] text-gray-400">
