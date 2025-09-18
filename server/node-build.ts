@@ -1,6 +1,8 @@
 import path from "path";
 import { createServer } from "./index";
 import * as express from "express";
+import http from "http";
+import { setupSockets } from "./socket";
 
 const app = createServer();
 const port = process.env.PORT || 3000;
@@ -22,7 +24,10 @@ app.get("*", (req, res) => {
   res.sendFile(path.join(distPath, "index.html"));
 });
 
-app.listen(port, () => {
+const server = http.createServer(app as any);
+setupSockets(server);
+
+server.listen(port, () => {
   console.log(`🚀 Fusion Starter server running on port ${port}`);
   console.log(`📱 Frontend: http://localhost:${port}`);
   console.log(`🔧 API: http://localhost:${port}/api`);

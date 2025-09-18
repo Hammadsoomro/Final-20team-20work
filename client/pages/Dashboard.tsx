@@ -211,7 +211,7 @@ export default function Dashboard() {
             <SalesTracker
               users={users}
               onChange={refresh}
-              canAdjust={user?.role !== "seller"}
+              canAdjust={user?.role !== "salesman"}
             />
           )}
           {active === "admin" && user?.role === "admin" && (
@@ -271,7 +271,7 @@ function Overview({
         <div className="absolute -right-6 -top-6 size-24 rounded-full bg-gradient-to-br from-amber-400 to-yellow-500 blur-2xl opacity-60" />
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Crown className="text-yellow-500" /> Top Seller
+            <Crown className="text-yellow-500" /> Top Salesman
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -288,7 +288,7 @@ function Overview({
               </div>
             </div>
           ) : (
-            <div className="text-muted-foreground">No seller yet</div>
+            <div className="text-muted-foreground">No salesman yet</div>
           )}
         </CardContent>
       </Card>
@@ -430,7 +430,7 @@ function TeamList({
 }) {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
-  const [role, setRole] = useState<"scrapper" | "seller">("seller");
+  const [role, setRole] = useState<"scrapper" | "salesman">("salesman");
   return (
     <div className="space-y-4">
       {canManage && (
@@ -450,15 +450,12 @@ function TeamList({
             value={role}
             onChange={(e) => setRole(e.target.value as any)}
           >
-            <option value="seller">Seller</option>
+            <option value="salesman">Salesman</option>
             <option value="scrapper">Scrapper</option>
           </select>
           <Button
             onClick={async () => {
-              const current = JSON.parse(
-                localStorage.getItem("current_user") || "null",
-              );
-              await adminCreateMember(current, { name, email, role });
+              await adminCreateMember(user!, { name, email, role });
               setName("");
               setEmail("");
               await onChange();
@@ -489,13 +486,8 @@ function TeamList({
                     size="sm"
                     variant={m.blocked ? "secondary" : "destructive"}
                     onClick={async () => {
-                      await adminToggleBlock(
-                        JSON.parse(
-                          localStorage.getItem("current_user") || "null",
-                        ),
-                        m.id,
-                        !m.blocked,
-                      );
+                      await adminToggleBlock(m.id, !m.blocked);
+
                       await onChange();
                     }}
                   >
@@ -505,12 +497,8 @@ function TeamList({
                     size="sm"
                     variant="outline"
                     onClick={async () => {
-                      await adminRemoveMember(
-                        JSON.parse(
-                          localStorage.getItem("current_user") || "null",
-                        ),
-                        m.id,
-                      );
+                      await adminRemoveMember(m.id);
+
                       await onChange();
                     }}
                   >
@@ -527,18 +515,37 @@ function TeamList({
 }
 
 function TeamChat() {
-  const [messages, setMessages] = useState<string[]>(() => {
-    const raw = localStorage.getItem("team_chat");
-    return raw ? (JSON.parse(raw) as string[]) : ["Welcome to Team Chat!"];
-  });
+  const [messages, setMessages] = useState<string[]>([]);
   const [input, setInput] = useState("");
   const { user } = useAuth();
-  const send = () => {
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const res = await fetch(`/api/chat/team/messages?limit=200`, {
+          credentials: "include",
+        });
+        if (!res.ok) throw new Error("history");
+        setMessages(await res.json());
+      } catch {
+        setMessages(["Welcome to Team Chat!"]);
+      }
+    })();
+  }, []);
+
+  const send = async () => {
     if (!input.trim()) return;
-    const next = [...messages, `${user?.name ?? "User"}: ${input.trim()}`];
-    setMessages(next);
-    localStorage.setItem("team_chat", JSON.stringify(next));
+    try {
+      await fetch(`/api/chat/team/messages`, {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ senderId: user?.id, text: input.trim() }),
+      });
+    } catch {}
     setInput("");
+    // append locally for immediate feedback
+    setMessages((m) => [...m, `${user?.name ?? "User"}: ${input.trim()}`]);
   };
   return (
     <div className="grid h-[60vh] grid-rows-[1fr_auto] rounded-lg border overflow-hidden">

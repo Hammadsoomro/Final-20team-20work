@@ -1,5 +1,5 @@
 import { RequestHandler } from "express";
-import { usersCol } from "../db";
+import { usersCol, getDb } from "../db";
 import bcrypt from "bcryptjs";
 import { z } from "zod";
 
@@ -16,29 +16,72 @@ const loginSchema = z.object({
   password: z.string().min(1),
 });
 
+async function parseBodyFallback(req: any) {
+  if (req && req.body && Object.keys(req.body).length) return req.body;
+  try {
+    const chunks: Buffer[] = [];
+    for await (const chunk of req)
+      chunks.push(typeof chunk === "string" ? Buffer.from(chunk) : chunk);
+    const raw = Buffer.concat(chunks).toString("utf-8").trim();
+    if (!raw) return {};
+    try {
+      return JSON.parse(raw);
+    } catch {
+      const params = new URLSearchParams(raw);
+      const obj: any = {};
+      for (const [k, v] of params) obj[k] = v;
+      return obj;
+    }
+  } catch {
+    return {};
+  }
+}
+
 export const signup: RequestHandler = async (req, res) => {
   try {
-    const body = signupSchema.parse(req.body);
+    const maybeBody =
+      req && req.body && Object.keys(req.body).length
+        ? req.body
+        : await parseBodyFallback(req);
+    const body = signupSchema.parse(maybeBody);
     const col = await usersCol();
     const exists = await col.findOne({ email: body.email.toLowerCase() });
     if (exists) return res.status(400).json({ error: "Email already exists" });
-    const hasAdmin = (await col.countDocuments({ role: "admin" })) > 0;
-    const role = hasAdmin ? ("seller" as const) : ("admin" as const);
+    const id = crypto.randomUUID();
     const user = {
-      id: crypto.randomUUID(),
+      id,
+      ownerId: id,
       firstName: body.firstName,
       lastName: body.lastName,
       name: `${body.firstName} ${body.lastName}`.trim(),
       phone: body.phone,
       email: body.email.toLowerCase(),
       passwordHash: await bcrypt.hash(body.password, 10),
-      role,
+      role: "admin" as const,
       blocked: false,
       salesToday: 0,
       salesMonth: 0,
       createdAt: Date.now(),
     };
     await col.insertOne(user as any);
+
+    // create session
+    const db = await getDb();
+    const token = crypto.randomUUID();
+    await db
+      .collection("sessions")
+      .insertOne({ token, userId: id, createdAt: Date.now() });
+    res.cookie("session", token, { httpOnly: true, sameSite: "lax" });
+    // also issue JWT (7 days)
+    try {
+      const jwt = signJwt({ userId: id }, 7 * 24 * 60 * 60 * 1000);
+      res.cookie("jwt", jwt, {
+        httpOnly: true,
+        sameSite: "lax",
+        maxAge: 7 * 24 * 60 * 60 * 1000,
+      });
+    } catch {}
+
     const { passwordHash, ...safe } = user;
     res.json(safe);
   } catch (e: any) {
@@ -48,43 +91,278 @@ export const signup: RequestHandler = async (req, res) => {
 
 export const login: RequestHandler = async (req, res) => {
   try {
-    const body = loginSchema.parse(req.body);
+    const maybeBody =
+      req && req.body && Object.keys(req.body).length
+        ? req.body
+        : await parseBodyFallback(req);
+    const body = loginSchema.parse(maybeBody);
     const col = await usersCol();
     const u = await col.findOne({ email: body.email.toLowerCase() });
     if (!u) return res.status(400).json({ error: "Invalid credentials" });
-    const ok = await bcrypt.compare(body.password, u.passwordHash);
+    const ok = await bcrypt.compare(body.password, (u as any).passwordHash);
     if (!ok) return res.status(400).json({ error: "Invalid credentials" });
     if (u.blocked) return res.status(403).json({ error: "Account is blocked" });
-    const { passwordHash, ...safe } = u;
+
+    // create session
+    const db = await getDb();
+    const token = crypto.randomUUID();
+    await db
+      .collection("sessions")
+      .insertOne({ token, userId: u.id, createdAt: Date.now() });
+    res.cookie("session", token, { httpOnly: true, sameSite: "lax" });
+    try {
+      const jwt = signJwt({ userId: u.id }, 7 * 24 * 60 * 60 * 1000);
+      res.cookie("jwt", jwt, {
+        httpOnly: true,
+        sameSite: "lax",
+        maxAge: 7 * 24 * 60 * 60 * 1000,
+      });
+    } catch {}
+
+    const { passwordHash, ...safe } = u as any;
     res.json(safe);
   } catch (e: any) {
     res.status(400).json({ error: e.message || "Invalid request" });
   }
 };
 
-export const listUsers: RequestHandler = async (_req, res) => {
+export const listUsers: RequestHandler = async (req, res) => {
   const col = await usersCol();
+  const ownerId =
+    typeof req.query.ownerId === "string" ? req.query.ownerId : undefined;
+  const filter = ownerId ? { ownerId } : {};
   const list = await col
-    .find({}, { projection: { passwordHash: 0 } })
+    .find(filter, { projection: { passwordHash: 0 } })
     .sort({ createdAt: -1 })
     .toArray();
   res.json(list);
+};
+
+export const getUserById: RequestHandler = async (req, res) => {
+  const col = await usersCol();
+  const id = req.params.id;
+  const user = await col.findOne({ id }, { projection: { passwordHash: 0 } });
+  if (!user) return res.status(404).json({ error: "Not found" });
+  res.json(user);
+};
+
+export const updateUser: RequestHandler = async (req, res) => {
+  try {
+    const schema = z.object({
+      name: z.string().min(1).optional(),
+      password: z.string().min(6).optional(),
+      notificationsEnabled: z.boolean().optional(),
+      salesCategory: z.string().optional(),
+      salesToday: z.number().optional(),
+    });
+    const body = schema.parse(req.body);
+    const col = await usersCol();
+    const updates: any = {};
+    if (body.name) {
+      updates.name = body.name;
+      updates.firstName = body.name.split(" ")[0] || body.name;
+      updates.lastName = body.name.split(" ").slice(1).join(" ") || "";
+    }
+    if (typeof body.notificationsEnabled === "boolean") {
+      updates.notificationsEnabled = body.notificationsEnabled;
+    }
+    if (typeof body.salesCategory === "string") {
+      updates.salesCategory = body.salesCategory;
+    }
+    if (typeof body.salesToday === "number") {
+      updates.salesToday = body.salesToday;
+    }
+    if (body.password) {
+      updates.passwordHash = await bcrypt.hash(body.password, 10);
+    }
+    if (!Object.keys(updates).length) return res.json({ ok: true });
+    await col.updateOne({ id: req.params.id }, { $set: updates });
+    const user = await col.findOne(
+      { id: req.params.id },
+      { projection: { passwordHash: 0 } },
+    );
+    res.json(user);
+  } catch (e: any) {
+    res.status(400).json({ error: e.message || "Invalid request" });
+  }
+};
+
+export const setSalesCategory: RequestHandler = async (req, res) => {
+  try {
+    const schema = z.object({ category: z.string().min(1) });
+    const { category } = schema.parse(req.body);
+    const col = await usersCol();
+    await col.updateOne(
+      { id: req.params.id },
+      { $set: { salesCategory: category } },
+    );
+    res.json({ ok: true });
+  } catch (e: any) {
+    res.status(400).json({ error: e.message || "Invalid request" });
+  }
+};
+
+// get current user from session cookie
+// Simple JWT utilities (HMAC SHA256, no external dependency)
+function base64url(input: Buffer | string) {
+  const b = Buffer.isBuffer(input) ? input : Buffer.from(String(input));
+  return b
+    .toString("base64")
+    .replace(/=+$/, "")
+    .replace(/\+/g, "-")
+    .replace(/\//g, "_");
+}
+
+let _jwtSecret: string | null = null;
+function getJwtSecret() {
+  if (_jwtSecret) return _jwtSecret;
+  if (process.env.JWT_SECRET) {
+    _jwtSecret = process.env.JWT_SECRET;
+    return _jwtSecret;
+  }
+  // fallback: derive from MONGODB_URI or generate
+  const fallback = process.env.MONGODB_URI || String(Math.random());
+  _jwtSecret = require("crypto")
+    .createHash("sha256")
+    .update(fallback)
+    .digest("hex");
+  console.log("⚠️ JWT secret derived from env/fallback");
+  return _jwtSecret;
+}
+
+function signJwt(payload: any, expiresMs = 7 * 24 * 60 * 60 * 1000) {
+  const header = { alg: "HS256", typ: "JWT" };
+  const now = Date.now();
+  const body = {
+    ...payload,
+    iat: Math.floor(now / 1000),
+    exp: Math.floor((now + expiresMs) / 1000),
+  };
+  const enc = `${base64url(JSON.stringify(header))}.${base64url(JSON.stringify(body))}`;
+  const sig = require("crypto")
+    .createHmac("sha256", getJwtSecret())
+    .update(enc)
+    .digest();
+  return `${enc}.${base64url(sig)}`;
+}
+
+function verifyJwt(token: string) {
+  try {
+    const parts = token.split(".");
+    if (parts.length !== 3) return null;
+    const [h, p, s] = parts;
+    const enc = `${h}.${p}`;
+    const expected = base64url(
+      require("crypto")
+        .createHmac("sha256", getJwtSecret())
+        .update(enc)
+        .digest(),
+    );
+    if (expected !== s) return null;
+    const payload = JSON.parse(Buffer.from(p, "base64").toString("utf-8"));
+    if (payload.exp && Date.now() / 1000 > payload.exp) return null;
+    return payload;
+  } catch {
+    return null;
+  }
+}
+
+async function getUserFromReq(req: any) {
+  try {
+    // Authorization header
+    const auth = req.headers?.authorization || req.headers?.Authorization;
+    if (auth && typeof auth === "string" && auth.startsWith("Bearer ")) {
+      const token = auth.slice(7).trim();
+      const payload = verifyJwt(token);
+      if (payload && payload.userId) {
+        const user = await (
+          await usersCol()
+        ).findOne({ id: payload.userId }, { projection: { passwordHash: 0 } });
+        if (user) return user;
+      }
+    }
+
+    // Cookie jwt
+    const cookie = req.headers?.cookie || "";
+    const mJwt = cookie
+      .split(";")
+      .map((s: any) => s.trim())
+      .find((c: any) => c.startsWith("jwt="));
+    const jwtToken = mJwt ? mJwt.split("=")[1] : null;
+    if (jwtToken) {
+      const payload = verifyJwt(jwtToken);
+      if (payload && payload.userId) {
+        const user = await (
+          await usersCol()
+        ).findOne({ id: payload.userId }, { projection: { passwordHash: 0 } });
+        if (user) return user;
+      }
+    }
+
+    // fallback to session token
+    const m = cookie
+      .split(";")
+      .map((s: any) => s.trim())
+      .find((c: any) => c.startsWith("session="));
+    const token = m ? m.split("=")[1] : null;
+    if (!token) return null;
+    const db = await getDb();
+    const s = await db.collection("sessions").findOne({ token });
+    if (!s) return null;
+    const user = await (
+      await usersCol()
+    ).findOne({ id: s.userId }, { projection: { passwordHash: 0 } });
+    return user;
+  } catch {
+    return null;
+  }
+}
+
+export const me: RequestHandler = async (req, res) => {
+  const u = await getUserFromReq(req);
+  if (!u) return res.status(401).json({ error: "Not authenticated" });
+  res.json(u);
+};
+
+export const logout: RequestHandler = async (req, res) => {
+  try {
+    const cookie = req.headers?.cookie || "";
+    const m = cookie
+      .split(";")
+      .map((s: any) => s.trim())
+      .find((c: any) => c.startsWith("session="));
+    const token = m ? m.split("=")[1] : null;
+    if (token) {
+      const db = await getDb();
+      await db.collection("sessions").deleteOne({ token });
+    }
+    // clear jwt cookie as well
+    res.clearCookie("session");
+    res.clearCookie("jwt");
+    res.json({ ok: true });
+  } catch (e: any) {
+    res.status(400).json({ error: e.message || "Invalid" });
+  }
 };
 
 export const createMember: RequestHandler = async (req, res) => {
   const schema = z.object({
     name: z.string().min(1),
     email: z.string().email(),
-    role: z.enum(["scrapper", "seller"]),
+    role: z.enum(["scrapper", "salesman"]),
     password: z.string().optional(),
+    ownerId: z.string().min(1),
   });
   try {
     const body = schema.parse(req.body);
     const col = await usersCol();
     const exists = await col.findOne({ email: body.email.toLowerCase() });
     if (exists) return res.status(400).json({ error: "Email already exists" });
+    const admin = await col.findOne({ id: body.ownerId, role: "admin" });
+    if (!admin) return res.status(400).json({ error: "Invalid ownerId" });
     const user = {
       id: crypto.randomUUID(),
+      ownerId: body.ownerId,
       firstName: body.name.split(" ")[0] || body.name,
       lastName: body.name.split(" ").slice(1).join(" ") || "",
       name: body.name,

@@ -1,10 +1,5 @@
 import { createContext, useContext, useEffect, useMemo, useState } from "react";
-import {
-  User,
-  getCurrentUser,
-  setCurrentUser,
-  logout as authLogout,
-} from "@/lib/auth";
+import { User, logout as authLogout } from "@/lib/auth";
 
 interface AuthCtx {
   user: User | null;
@@ -15,22 +10,61 @@ interface AuthCtx {
 const Ctx = createContext<AuthCtx | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUserState] = useState<User | null>(null);
+
+  async function postAttendance() {
+    try {
+      await fetch("/api/attendance", {
+        method: "POST",
+        credentials: "include",
+      });
+    } catch (e) {
+      // ignore attendance errors
+    }
+  }
 
   useEffect(() => {
-    setUser(getCurrentUser());
+    (async () => {
+      try {
+        // try up to 2 times before giving up (handles transient session delete)
+        let attempts = 0;
+        let ok = false;
+        while (attempts < 2 && !ok) {
+          attempts++;
+          try {
+            const res = await fetch("/api/auth/me", { credentials: "include" });
+            if (!res.ok) {
+              // if unauthorized, don't retry
+              if (res.status === 401) break;
+              await new Promise((r) => setTimeout(r, 500));
+              continue;
+            }
+            const data = await res.json();
+            setUserState(data as User);
+            // mark attendance when we detect an authenticated user
+            postAttendance();
+            ok = true;
+          } catch (e) {
+            await new Promise((r) => setTimeout(r, 500));
+          }
+        }
+        if (!ok) setUserState(null);
+      } catch {
+        setUserState(null);
+      }
+    })();
   }, []);
 
   const value = useMemo(
     () => ({
       user,
       setUser: (u: User | null) => {
-        setCurrentUser(u);
-        setUser(u);
+        setUserState(u);
+        if (u) postAttendance();
       },
       logout: () => {
         authLogout();
-        setUser(null);
+        setUserState(null);
       },
     }),
     [user],

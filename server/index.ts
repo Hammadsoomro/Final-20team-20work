@@ -16,9 +16,42 @@ export async function createServer() {
   const app = express();
 
   // Middleware
-  app.use(cors());
+  app.use(cors({ origin: true, credentials: true }));
   app.use(express.json());
   app.use(express.urlencoded({ extended: true }));
+
+  // Proactively ensure indexes for faster queries and smoother UX
+  (async () => {
+    try {
+      const db = await (await import("./db")).getDb();
+      await Promise.all([
+        // users
+        db.collection("users").createIndex({ id: 1 }, { unique: true }),
+        db.collection("users").createIndex({ email: 1 }, { unique: true }),
+        db.collection("users").createIndex({ ownerId: 1 }),
+        db.collection("users").createIndex({ role: 1 }),
+        // sessions
+        db.collection("sessions").createIndex({ token: 1 }, { unique: true }),
+        db.collection("sessions").createIndex({ userId: 1 }),
+        db.collection("sessions").createIndex({ createdAt: -1 }),
+        // presence
+        db.collection("presence").createIndex({ userId: 1 }, { unique: true }),
+        db.collection("presence").createIndex({ lastSeen: -1 }),
+        // messages
+        db.collection("messages").createIndex({ roomId: 1, createdAt: 1 }),
+        // unread
+        db.collection("unread").createIndex({ userId: 1, roomId: 1 }, { unique: true }),
+        // attendance
+        db.collection("attendance").createIndex({ ownerId: 1, timestamp: -1 }),
+        // sorter queue and assignments
+        db.collection("sorter_queue").createIndex({ value: 1 }, { unique: true }),
+        db.collection("sorter_queue").createIndex({ status: 1 }),
+        db.collection("sorter_queue").createIndex({ createdAt: 1 }),
+        db.collection("sorter_assignments").createIndex({ userId: 1, status: 1 }),
+        db.collection("sorter_assignments").createIndex({ status: 1, createdAt: -1 }),
+      ]).catch(() => {});
+    } catch {}
+  })();
 
   // Health
   app.get("/api/ping", (_req, res) => {
@@ -32,7 +65,12 @@ export async function createServer() {
   // Auth & Users (MongoDB)
   app.post("/api/auth/signup", signupRoute);
   app.post("/api/auth/login", loginRoute);
+  app.post("/api/auth/logout", (await import("./routes/users")).logout);
+  app.get("/api/auth/me", (await import("./routes/users")).me);
   app.get("/api/users", listUsers);
+  app.get("/api/users/:id", (await import("./routes/users")).getUserById);
+  app.patch("/api/users/:id", (await import("./routes/users")).updateUser);
+  app.post("/api/users/:id/salesCategory", (await import("./routes/users")).setSalesCategory);
   app.post("/api/admin/users", createMember);
   app.delete("/api/admin/users/:id", removeMember);
   app.patch("/api/admin/users/:id/block", toggleBlock);
@@ -46,6 +84,28 @@ export async function createServer() {
   app.post("/api/presence/heartbeat", chat.heartbeat);
   app.get("/api/presence/online", chat.listOnline);
   app.post("/api/distribute", chat.distributeNumbers);
+
+  // Unread map APIs
+  app.get("/api/unread", chat.getUnread);
+  app.post("/api/unread/inc", chat.incUnread);
+  app.post("/api/unread/clear", chat.clearUnread);
+  app.post("/api/unread/clearAll", chat.clearAllUnread);
+
+  // Sorter
+  const sorter = await import("./routes/sorter");
+  app.get("/api/sorter", sorter.listPending);
+  app.post("/api/sorter", sorter.addLines);
+  app.post("/api/sorter/distribute", sorter.distribute);
+  app.get("/api/sorter/assignments", sorter.listAssignments);
+  app.post("/api/sorter/claim", sorter.claimAssignment);
+  app.post("/api/sorter/clear", sorter.clearPending);
+  app.post("/api/sorter/assign", sorter.assignToUser);
+  app.get("/api/sorter/recent", sorter.listRecent);
+
+  // Attendance
+  const attendance = await import("./routes/attendance");
+  app.post("/api/attendance", attendance.postAttendance);
+  app.get("/api/attendance", attendance.listAttendance);
 
   return app;
 }
