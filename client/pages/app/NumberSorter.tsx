@@ -143,9 +143,9 @@ export default function NumberSorter() {
                 </div>
                 <div className="flex-1 overflow-auto">
                   <div className="flex">
-                    <div className="w-12 border-r bg-gray-50 p-2 text-right text-xs text-gray-500 font-mono">
+                    <div className="w-14 border-r bg-gray-50 p-2 text-right text-xs text-gray-500 font-mono flex flex-col">
                       {stats.sorted.map((_, i) => (
-                        <div key={i}>{i + 1}</div>
+                        <div key={i} className="py-2">{i + 1}</div>
                       ))}
                     </div>
                     <div className="flex-1 p-4 text-sm font-mono">
