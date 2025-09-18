@@ -75,13 +75,30 @@ export default function NumberSorter() {
       .split(/\r?\n/)
       .map((s) => s.trim())
       .filter(Boolean);
-    const uniq = Array.from(new Set(lines));
-    const sorted = [...uniq].sort((a, b) => {
-      const na = parseNumberLike(a);
-      const nb = parseNumberLike(b);
-      if (na !== null && nb !== null) return na - nb;
-      return a.localeCompare(b);
+
+    // Use first 15 words of each line as the dedupe/sort key
+    function keyForLine(line: string) {
+      const words = line.split(/\s+/).filter(Boolean);
+      const first = words.slice(0, 15).join(" ");
+      return first.toLowerCase();
+    }
+
+    const map = new Map<string, string>();
+    for (const line of lines) {
+      const key = keyForLine(line) || line.toLowerCase();
+      if (!map.has(key)) map.set(key, line);
+    }
+
+    const uniq = Array.from(map.values());
+
+    // Sort by the key (first 15 words). If needed, fallback to full line compare.
+    const sorted = uniq.sort((a, b) => {
+      const ka = keyForLine(a);
+      const kb = keyForLine(b);
+      if (ka === kb) return a.localeCompare(b);
+      return ka.localeCompare(kb);
     });
+
     return {
       raw: lines.length,
       unique: uniq.length,
