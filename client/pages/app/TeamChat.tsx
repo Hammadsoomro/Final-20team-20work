@@ -373,7 +373,7 @@ export default function TeamChat() {
           {filtered.map((c) => (
             <button
               key={c.id}
-              className="w-full rounded-md p-2 text-left hover:bg-gray-50"
+              className={`w-full rounded-md p-2 text-left ${activeRoom.type === 'dm' && activeRoom.userId === c.id ? 'bg-indigo-50 ring-2 ring-indigo-200' : 'hover:bg-gray-50'}`}
               onClick={() => selectDm(c.id)}
             >
               <div className="flex items-center gap-2">
