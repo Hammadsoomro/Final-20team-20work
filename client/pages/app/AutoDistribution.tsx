@@ -30,17 +30,6 @@ export default function AutoDistribution() {
       const r = await fetch("/api/presence/online", { credentials: "include" });
       const ids = (await r.json()) as string[];
       setOnlineIds(ids);
-      const ru = await fetch("/api/users", { credentials: "include" });
-      const allUsers = (await ru.json()) as any[];
-      const list = allUsers
-        .filter((u) => u.role === "salesman")
-        .map((u) => ({
-          id: u.id as string,
-          name: u.name as string,
-          email: u.email as string,
-        }))
-        .filter((u) => ids.includes(u.id));
-      setSalesmen(list);
     } catch {}
   }
 
