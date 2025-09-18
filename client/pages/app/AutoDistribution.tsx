@@ -316,28 +316,31 @@ export default function AutoDistribution() {
             {loading ? "Loading..." : `${pending.length} total`}
           </div>
         </div>
-        <div className="flex-1 overflow-auto">
-          <div className="flex">
-            <div className="w-14 border-r bg-gray-50 p-2 text-right text-xs text-gray-500 font-mono flex flex-col">
-              {pending.map((_, i) => (
-                <div key={i} className="py-2">{i + 1}</div>
-              ))}
+        <div className="flex-1 overflow-auto p-4">
+          {pending.length ? (
+            <div className="overflow-auto">
+              <table className="w-full table-auto text-sm">
+                <thead>
+                  <tr className="text-left text-xs text-gray-500 border-b">
+                    <th className="w-12 py-2">#</th>
+                    <th className="py-2">Line</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {pending.map((v, i) => (
+                    <tr key={i} className="border-b hover:bg-gray-50">
+                      <td className="py-2 text-right text-xs text-gray-500 font-mono pr-4">{i + 1}</td>
+                      <td className="py-2 break-words font-mono text-gray-800">{v}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
-            <div className="flex-1 p-4 text-sm font-mono">
-              {pending.length ? (
-                pending.map((v, i) => (
-                  <div key={i} className="text-gray-800 py-2 break-words">
-                    {v}
-                  </div>
-                ))
-              ) : (
-                <p className="italic text-gray-500">
-                  Numbers you add from Sorter → Add to Queue will appear here
-                  and accumulate.
-                </p>
-              )}
-            </div>
-          </div>
+          ) : (
+            <p className="italic text-gray-500">
+              Numbers you add from Sorter → Add to Queue will appear here and accumulate.
+            </p>
+          )}
         </div>
       </Card>
     </div>
