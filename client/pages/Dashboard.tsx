@@ -271,7 +271,7 @@ function Overview({
         <div className="absolute -right-6 -top-6 size-24 rounded-full bg-gradient-to-br from-amber-400 to-yellow-500 blur-2xl opacity-60" />
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Crown className="text-yellow-500" /> Top Seller
+            <Crown className="text-yellow-500" /> Top Salesman
           </CardTitle>
         </CardHeader>
         <CardContent>
