@@ -196,7 +196,7 @@ export default function TeamChat() {
       : contacts.find((c) => c.id === activeRoom.userId)?.email || "";
 
   return (
-    <div className="flex h-full min-h-0 gap-4">
+    <div className="flex h-full min-h-0 gap-4" style={{ marginLeft: '-4px' }}>
       {/* Left contacts panel */}
       <div className="w-64 shrink-0 rounded-lg border bg-white">
         <div className="flex items-center justify-between border-b p-4">
