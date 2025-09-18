@@ -211,7 +211,7 @@ export default function Dashboard() {
             <SalesTracker
               users={users}
               onChange={refresh}
-              canAdjust={user?.role !== "seller"}
+              canAdjust={user?.role !== "salesman"}
             />
           )}
           {active === "admin" && user?.role === "admin" && (
