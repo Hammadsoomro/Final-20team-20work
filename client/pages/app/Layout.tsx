@@ -23,6 +23,7 @@ import {
   Settings as SettingsIcon,
   Shield,
   SortAsc,
+  ListOrdered,
 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { logout } from "@/lib/auth";
@@ -97,15 +98,26 @@ export default function AppLayout() {
                   </SidebarMenuButton>
                 </SidebarMenuItem>
                 {canUseSorter && (
-                  <SidebarMenuItem>
-                    <SidebarMenuButton
-                      isActive={isActive("/app/sorter")}
-                      onClick={() => navigate("/app/sorter")}
-                    >
-                      <SortAsc />
-                      <span>Number Sorter</span>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
+                  <>
+                    <SidebarMenuItem>
+                      <SidebarMenuButton
+                        isActive={isActive("/app/sorter")}
+                        onClick={() => navigate("/app/sorter")}
+                      >
+                        <SortAsc />
+                        <span>Number Sorter</span>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                    <SidebarMenuItem>
+                      <SidebarMenuButton
+                        isActive={isActive("/app/auto-distribution")}
+                        onClick={() => navigate("/app/auto-distribution")}
+                      >
+                        <ListOrdered />
+                        <span>Auto Distribution</span>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  </>
                 )}
                 <SidebarMenuItem>
                   <SidebarMenuButton
