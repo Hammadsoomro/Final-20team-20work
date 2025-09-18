@@ -18,6 +18,19 @@ export const postAttendance: RequestHandler = async (req, res) => {
     const iso = new Date(now).toISOString();
     const u = await db.collection("users").findOne({ id: userId });
     const ownerId = u ? u.ownerId || u.id : userId;
+    // Enforce once-per-20-hours rule per user
+    const last = await db
+      .collection("attendance")
+      .find({ userId })
+      .sort({ timestamp: -1 })
+      .limit(1)
+      .toArray();
+    const TWENTY_HOURS = 20 * 60 * 60 * 1000;
+    if (last.length && now - (last[0].timestamp || 0) < TWENTY_HOURS) {
+      const nextAllowed = new Date((last[0].timestamp || 0) + TWENTY_HOURS).toISOString();
+      return res.json({ ok: false, reason: "too_soon", nextAllowed });
+    }
+
     const doc = { userId, ownerId, timestamp: now, iso };
     await db.collection("attendance").insertOne(doc as any);
     res.json({ ok: true, recordedAt: iso });
