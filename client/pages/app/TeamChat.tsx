@@ -202,7 +202,7 @@ export default function TeamChat() {
         <div className="flex items-center justify-between border-b p-4">
           <div className="flex items-center gap-2">
             <div className="h-8 w-8 rounded-md bg-gradient-to-r from-indigo-600 to-purple-600" />
-            <div className="font-bold text-gray-900">TeamFlow</div>
+            <div className="font-bold text-gray-900">Team-Work</div>
           </div>
         </div>
         <div className="p-4 border-b">
