@@ -318,15 +318,15 @@ export default function AutoDistribution() {
         </div>
         <div className="flex-1 overflow-auto">
           <div className="flex">
-            <div className="w-12 border-r bg-gray-50 p-2 text-right text-xs text-gray-500 font-mono">
+            <div className="w-14 border-r bg-gray-50 p-2 text-right text-xs text-gray-500 font-mono flex flex-col">
               {pending.map((_, i) => (
-                <div key={i}>{i + 1}</div>
+                <div key={i} className="py-2">{i + 1}</div>
               ))}
             </div>
             <div className="flex-1 p-4 text-sm font-mono">
               {pending.length ? (
                 pending.map((v, i) => (
-                  <div key={i} className="text-gray-800">
+                  <div key={i} className="text-gray-800 py-2 break-words">
                     {v}
                   </div>
                 ))
