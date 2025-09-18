@@ -231,9 +231,9 @@ export default function TeamChat() {
   }, []);
 
   async function requestNumbers() {
-    if (!user || !sorterAnnounce) return;
+    if (!user) return;
     if (countdownRef.current) window.clearInterval(countdownRef.current as any);
-    setCountdown(sorterAnnounce.timerSeconds || 0);
+    setCountdown((sorterAnnounce?.timerSeconds as number) || 0);
     countdownRef.current = window.setInterval(() => {
       setCountdown((c) => {
         if (c === null) return c;
