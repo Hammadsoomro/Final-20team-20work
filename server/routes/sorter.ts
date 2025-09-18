@@ -69,8 +69,9 @@ export const distribute: RequestHandler = async (req, res) => {
   const schema = z.object({
     perUser: z.number().int().min(1),
     target: z.enum(["online", "all"]).default("online"),
+    timerSeconds: z.number().int().min(0).optional(),
   });
-  const { perUser, target } = schema.parse(req.body);
+  const { perUser, target, timerSeconds } = schema.parse(req.body);
   const db = await getDb();
   const now = Date.now();
   const users = await db
