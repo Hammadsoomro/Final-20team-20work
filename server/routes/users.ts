@@ -106,6 +106,10 @@ export const login: RequestHandler = async (req, res) => {
       .collection("sessions")
       .insertOne({ token, userId: u.id, createdAt: Date.now() });
     res.cookie("session", token, { httpOnly: true, sameSite: "lax" });
+    try {
+      const jwt = signJwt({ userId: u.id }, 7 * 24 * 60 * 60 * 1000);
+      res.cookie('jwt', jwt, { httpOnly: true, sameSite: 'lax', maxAge: 7 * 24 * 60 * 60 * 1000 });
+    } catch {}
 
     const { passwordHash, ...safe } = u as any;
     res.json(safe);
