@@ -76,23 +76,16 @@ export default function NumberSorter() {
       .map((s) => s.trim())
       .filter(Boolean);
 
-    // Use first 15 words of each line as the dedupe/sort key
+    // key based on first 15 words for sorting
     function keyForLine(line: string) {
       const words = line.split(/\s+/).filter(Boolean);
-      const first = words.slice(0, 15).join(" ");
-      return first.toLowerCase();
+      return words.slice(0, 15).join(" ").toLowerCase();
     }
 
-    const map = new Map<string, string>();
-    for (const line of lines) {
-      const key = keyForLine(line) || line.toLowerCase();
-      if (!map.has(key)) map.set(key, line);
-    }
+    // Dedupe by full line (keep different tails even if first 15 words match)
+    const uniqLines = Array.from(new Set(lines));
 
-    const uniq = Array.from(map.values());
-
-    // Sort by the key (first 15 words). If needed, fallback to full line compare.
-    const sorted = uniq.sort((a, b) => {
+    const sorted = uniqLines.sort((a, b) => {
       const ka = keyForLine(a);
       const kb = keyForLine(b);
       if (ka === kb) return a.localeCompare(b);
@@ -101,10 +94,10 @@ export default function NumberSorter() {
 
     return {
       raw: lines.length,
-      unique: uniq.length,
-      dup: Math.max(lines.length - uniq.length, 0),
+      unique: uniqLines.length,
+      dup: Math.max(lines.length - uniqLines.length, 0),
       lines,
-      uniq,
+      uniq: uniqLines,
       sorted,
     };
   }, [raw]);
