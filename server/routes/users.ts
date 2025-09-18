@@ -180,22 +180,87 @@ export const setSalesCategory: RequestHandler = async (req, res) => {
 };
 
 // get current user from session cookie
+// Simple JWT utilities (HMAC SHA256, no external dependency)
+function base64url(input: Buffer | string) {
+  const b = Buffer.isBuffer(input) ? input : Buffer.from(String(input));
+  return b.toString('base64').replace(/=+$/,'').replace(/\+/g,'-').replace(/\//g,'_');
+}
+
+let _jwtSecret: string | null = null;
+function getJwtSecret() {
+  if (_jwtSecret) return _jwtSecret;
+  if (process.env.JWT_SECRET) {
+    _jwtSecret = process.env.JWT_SECRET;
+    return _jwtSecret;
+  }
+  // fallback: derive from MONGODB_URI or generate
+  const fallback = process.env.MONGODB_URI || String(Math.random());
+  _jwtSecret = require('crypto').createHash('sha256').update(fallback).digest('hex');
+  console.log('⚠️ JWT secret derived from env/fallback');
+  return _jwtSecret;
+}
+
+function signJwt(payload: any, expiresMs = 7 * 24 * 60 * 60 * 1000) {
+  const header = { alg: 'HS256', typ: 'JWT' };
+  const now = Date.now();
+  const body = { ...payload, iat: Math.floor(now / 1000), exp: Math.floor((now + expiresMs) / 1000) };
+  const enc = `${base64url(JSON.stringify(header))}.${base64url(JSON.stringify(body))}`;
+  const sig = require('crypto').createHmac('sha256', getJwtSecret()).update(enc).digest();
+  return `${enc}.${base64url(sig)}`;
+}
+
+function verifyJwt(token: string) {
+  try {
+    const parts = token.split('.');
+    if (parts.length !== 3) return null;
+    const [h, p, s] = parts;
+    const enc = `${h}.${p}`;
+    const expected = base64url(require('crypto').createHmac('sha256', getJwtSecret()).update(enc).digest());
+    if (expected !== s) return null;
+    const payload = JSON.parse(Buffer.from(p, 'base64').toString('utf-8'));
+    if (payload.exp && Date.now() / 1000 > payload.exp) return null;
+    return payload;
+  } catch {
+    return null;
+  }
+}
+
 async function getUserFromReq(req: any) {
   try {
-    const cookie = req.headers?.cookie || "";
+    // Authorization header
+    const auth = req.headers?.authorization || req.headers?.Authorization;
+    if (auth && typeof auth === 'string' && auth.startsWith('Bearer ')) {
+      const token = auth.slice(7).trim();
+      const payload = verifyJwt(token);
+      if (payload && payload.userId) {
+        const user = await (await usersCol()).findOne({ id: payload.userId }, { projection: { passwordHash: 0 } });
+        if (user) return user;
+      }
+    }
+
+    // Cookie jwt
+    const cookie = req.headers?.cookie || '';
+    const mJwt = cookie.split(';').map((s:any)=>s.trim()).find((c:any)=>c.startsWith('jwt='));
+    const jwtToken = mJwt ? mJwt.split('=')[1] : null;
+    if (jwtToken) {
+      const payload = verifyJwt(jwtToken);
+      if (payload && payload.userId) {
+        const user = await (await usersCol()).findOne({ id: payload.userId }, { projection: { passwordHash: 0 } });
+        if (user) return user;
+      }
+    }
+
+    // fallback to session token
     const m = cookie
-      .split(";")
+      .split(';')
       .map((s: any) => s.trim())
-      .find((c: any) => c.startsWith("session="));
-    if (!m) return null;
-    const token = m.split("=")[1];
+      .find((c: any) => c.startsWith('session='));
+    const token = m ? m.split('=')[1] : null;
     if (!token) return null;
     const db = await getDb();
-    const s = await db.collection("sessions").findOne({ token });
+    const s = await db.collection('sessions').findOne({ token });
     if (!s) return null;
-    const user = await (
-      await usersCol()
-    ).findOne({ id: s.userId }, { projection: { passwordHash: 0 } });
+    const user = await (await usersCol()).findOne({ id: s.userId }, { projection: { passwordHash: 0 } });
     return user;
   } catch {
     return null;
@@ -204,26 +269,28 @@ async function getUserFromReq(req: any) {
 
 export const me: RequestHandler = async (req, res) => {
   const u = await getUserFromReq(req);
-  if (!u) return res.status(401).json({ error: "Not authenticated" });
+  if (!u) return res.status(401).json({ error: 'Not authenticated' });
   res.json(u);
 };
 
 export const logout: RequestHandler = async (req, res) => {
   try {
-    const cookie = req.headers?.cookie || "";
+    const cookie = req.headers?.cookie || '';
     const m = cookie
-      .split(";")
+      .split(';')
       .map((s: any) => s.trim())
-      .find((c: any) => c.startsWith("session="));
-    const token = m ? m.split("=")[1] : null;
+      .find((c: any) => c.startsWith('session='));
+    const token = m ? m.split('=')[1] : null;
     if (token) {
       const db = await getDb();
-      await db.collection("sessions").deleteOne({ token });
+      await db.collection('sessions').deleteOne({ token });
     }
-    res.clearCookie("session");
+    // clear jwt cookie as well
+    res.clearCookie('session');
+    res.clearCookie('jwt');
     res.json({ ok: true });
   } catch (e: any) {
-    res.status(400).json({ error: e.message || "Invalid" });
+    res.status(400).json({ error: e.message || 'Invalid' });
   }
 };
 
