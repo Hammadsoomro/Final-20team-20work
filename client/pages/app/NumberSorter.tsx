@@ -29,9 +29,7 @@ export default function NumberSorter() {
       if (!byKey.has(k)) byKey.set(k, line);
     }
 
-    const uniqByKey = Array.from(byKey.entries())
-      .sort((a, b) => a[0].localeCompare(b[0]))
-      .map(([, v]) => v);
+    const uniqByKey = Array.from(byKey.values());
 
     return {
       raw: lines.length,
@@ -129,7 +127,7 @@ export default function NumberSorter() {
               </div>
               <div className="flex flex-1 flex-col">
                 <div className="border-b bg-emerald-50 p-3">
-                  <h4 className="text-sm font-medium text-emerald-700">Sorted & Deduplicated</h4>
+                  <h4 className="text-sm font-medium text-emerald-700">Deduplicated (first 15 words)</h4>
                 </div>
                 <div className="flex-1 overflow-auto">
                   <div className="flex">
@@ -146,7 +144,7 @@ export default function NumberSorter() {
                           </div>
                         ))
                       ) : (
-                        <p className="italic text-gray-500">Sorted numbers will appear here...</p>
+                        <p className="italic text-gray-500">Unique numbers will appear here...</p>
                       )}
                     </div>
                   </div>
