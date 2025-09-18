@@ -321,12 +321,12 @@ export default function TeamChat() {
 
         <div className="border-b p-2">
           <Button
-            className="w-full justify-start bg-gradient-to-r from-indigo-600 to-purple-600 text-white relative"
+            className={`w-full justify-start relative ${activeRoom.type === 'team' ? 'bg-indigo-50 ring-2 ring-indigo-200' : 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white'}`}
             onClick={selectTeam}
           >
-            <div className="mr-2 inline-flex h-10 w-10 items-center justify-center rounded-full bg-white/20">
+            <div className={`mr-2 inline-flex h-10 w-10 items-center justify-center rounded-full ${activeRoom.type === 'team' ? 'bg-white/60 text-indigo-700' : 'bg-white/20'}`}>
               <svg
-                className="h-5 w-5 text-white"
+                className={`${activeRoom.type === 'team' ? 'h-5 w-5 text-indigo-700' : 'h-5 w-5 text-white'}`}
                 viewBox="0 0 24 24"
                 fill="none"
                 stroke="currentColor"
@@ -336,7 +336,7 @@ export default function TeamChat() {
               </svg>
             </div>
             <div className="text-left">
-              <div className="font-medium">Team Chat</div>
+              <div className={`font-medium ${activeRoom.type === 'team' ? 'text-indigo-900' : ''}`}>Team Chat</div>
               <div className="text-xs text-indigo-100">Everyone can see</div>
             </div>
             {getUnread("team") > 0 && (
