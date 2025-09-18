@@ -221,6 +221,17 @@ export default function TeamChat() {
     return null;
   }, [messages, activeRoom]);
 
+  const savedTimer = useMemo(() => {
+    try {
+      const raw = localStorage.getItem("autoDist.settings");
+      if (!raw) return 180;
+      const s = JSON.parse(raw);
+      return typeof s.timerSeconds === "number" ? s.timerSeconds : 180;
+    } catch {
+      return 180;
+    }
+  }, [activeRoom]);
+
   const [countdown, setCountdown] = useState<number | null>(null);
   const countdownRef = useRef<number | null>(null);
 
@@ -233,7 +244,7 @@ export default function TeamChat() {
   async function requestNumbers() {
     if (!user) return;
     if (countdownRef.current) window.clearInterval(countdownRef.current as any);
-    setCountdown((sorterAnnounce?.timerSeconds as number) || 0);
+    setCountdown(savedTimer || 0);
     countdownRef.current = window.setInterval(() => {
       setCountdown((c) => {
         if (c === null) return c;
@@ -416,13 +427,7 @@ export default function TeamChat() {
         {activeRoom.type === "room" && activeRoom.roomId === "sorter" && (
           <div className="flex items-center justify-between border-b bg-emerald-50 p-3">
             <div className="text-sm text-emerald-800">
-              {sorterAnnounce ? (
-                <span>
-                  Announcement: per user {sorterAnnounce.perUser} • timer {sorterAnnounce.timerSeconds}s
-                </span>
-              ) : (
-                <span>No active announcement</span>
-              )}
+              <span>Timer: {savedTimer}s</span>
             </div>
             <div className="flex items-center gap-3">
               <Button
