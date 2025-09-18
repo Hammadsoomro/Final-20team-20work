@@ -46,6 +46,10 @@ export default function NumberSorter() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ lines: stats.sorted }),
     });
+    // trigger a quick refresh to encourage immediate visibility in Auto Distribution (sockets or REST fallback may follow)
+    try {
+      await fetch('/api/sorter');
+    } catch {}
     setRaw("");
   }
 
