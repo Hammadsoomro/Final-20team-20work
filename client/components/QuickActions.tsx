@@ -1,7 +1,10 @@
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { useNavigate } from "react-router-dom";
 
 export default function QuickActions() {
+  const navigate = useNavigate();
+
   return (
     <Card>
       <div style={{ display: "grid", gap: 24, gridTemplateColumns: "repeat(4, minmax(0, 1fr))" }}>
@@ -26,6 +29,7 @@ export default function QuickActions() {
 
             <div style={{ display: "grid", gap: 16, gridTemplateColumns: "repeat(4, minmax(0, 1fr))" }}>
               <button
+                onClick={() => navigate("/app/chat")}
                 style={{
                   appearance: "button",
                   backgroundImage: "linear-gradient(to right, rgb(239, 246, 255), rgb(238, 242, 255))",
@@ -52,6 +56,7 @@ export default function QuickActions() {
               </button>
 
               <button
+                onClick={() => navigate("/app/sales")}
                 style={{
                   appearance: "button",
                   backgroundImage: "linear-gradient(to right, rgb(240, 253, 244), rgb(236, 245, 244))",
@@ -79,6 +84,7 @@ export default function QuickActions() {
               </button>
 
               <button
+                onClick={() => navigate("/app/sorter")}
                 style={{
                   appearance: "button",
                   backgroundImage: "linear-gradient(to right, rgb(255, 247, 237), rgb(254, 242, 242))",
@@ -109,6 +115,7 @@ export default function QuickActions() {
               </button>
 
               <button
+                onClick={() => navigate("/app/admin")}
                 style={{
                   appearance: "button",
                   backgroundImage: "linear-gradient(to right, rgb(250, 245, 255), rgb(253, 242, 248))",
