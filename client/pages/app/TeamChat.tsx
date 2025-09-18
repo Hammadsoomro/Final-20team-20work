@@ -81,6 +81,24 @@ export default function TeamChat() {
         incUnread(msg.roomId);
         setUnreadTick((t) => t + 1);
       }
+
+      // Auto-join sorter room and start countdown for salesmen when an announce arrives
+      if (msg.roomId === "sorter" && msg.senderId === "system") {
+        try {
+          const obj = JSON.parse(msg.text);
+          if (obj && obj.type === "sorter:announce") {
+            if (Date.now() - lastAnnounceRef.current > 3000) {
+              lastAnnounceRef.current = Date.now();
+              if (user?.role === "salesman") {
+                socket.emit("chat:join", { roomId: "sorter" });
+                setActiveRoom({ type: "room", roomId: "sorter", name: "Sorter" });
+                requestNumbers(typeof obj.timerSeconds === "number" ? obj.timerSeconds : undefined);
+              }
+            }
+          }
+        } catch {}
+      }
+
       playBeep();
     };
 
@@ -235,6 +253,7 @@ export default function TeamChat() {
 
   const [countdown, setCountdown] = useState<number | null>(null);
   const countdownRef = useRef<number | null>(null);
+  const lastAnnounceRef = useRef<number>(0);
 
   useEffect(() => {
     return () => {
@@ -243,10 +262,11 @@ export default function TeamChat() {
     };
   }, []);
 
-  async function requestNumbers() {
+  async function requestNumbers(seconds?: number) {
     if (!user) return;
     if (countdownRef.current) window.clearInterval(countdownRef.current as any);
-    setCountdown(savedTimer || 0);
+    const total = typeof seconds === "number" ? seconds : savedTimer || 0;
+    setCountdown(total);
     countdownRef.current = window.setInterval(() => {
       setCountdown((c) => {
         if (c === null) return c;
