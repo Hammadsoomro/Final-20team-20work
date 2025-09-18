@@ -81,21 +81,7 @@ export default function AutoDistribution() {
     };
   }, [socket]);
 
-  async function distributeNow() {
-    const body: any = {
-      perUser,
-      target: "online",
-      timerSeconds,
-    };
-    if (selectionMode === "selected" && selectedIds.length) {
-      body.selectedIds = selectedIds;
-    }
-    await fetch("/api/sorter/distribute", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(body),
-    });
-  }
+  // Distribute controls removed per request: use server endpoints directly from admin pages
 
   if (!canUse)
     return <div className="text-sm text-muted-foreground">Access denied</div>;
