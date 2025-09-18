@@ -107,7 +107,7 @@ export default function NumberSorter() {
     await fetch("/api/sorter/distribute", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ perUser, target }),
+      body: JSON.stringify({ perUser, target, timerSeconds }),
     });
   }
 
