@@ -82,7 +82,7 @@ export default function AdminPanel() {
           value={role}
           onChange={(e) => setRole(e.target.value as any)}
         >
-          <option value="seller">Seller</option>
+          <option value="salesman">Salesman</option>
           <option value="scrapper">Scrapper</option>
         </select>
         <Button onClick={handleAdd}>Add</Button>
