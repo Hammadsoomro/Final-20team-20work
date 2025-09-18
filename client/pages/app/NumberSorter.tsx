@@ -19,9 +19,14 @@ export default function NumberSorter() {
   const [perUser, setPerUser] = useState(3);
   const [target, setTarget] = useState<"online" | "all">("online");
   const [intervalMin, setIntervalMin] = useState(3);
+  const [timerSeconds, setTimerSeconds] = useState(180);
   const [auto, setAuto] = useState(false);
   const timerRef = useRef<number | null>(null);
   const socket = useMemo(() => (user ? getSocket(user.id) : null), [user?.id]);
+
+  const [sorterAnnouncement, setSorterAnnouncement] = useState<any | null>(null);
+  const [countdown, setCountdown] = useState<number | null>(null);
+  const countdownRef = useRef<number | null>(null);
 
   const canUse = user?.role === "admin" || user?.role === "scrapper";
   if (!canUse)
