@@ -14,7 +14,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   async function postAttendance() {
     try {
-      await fetch("/api/attendance", { method: "POST", credentials: "include" });
+      await fetch("/api/attendance", {
+        method: "POST",
+        credentials: "include",
+      });
     } catch (e) {
       // ignore attendance errors
     }

@@ -4,8 +4,6 @@ import { Crown } from "lucide-react";
 import QuickActions from "@/components/QuickActions";
 import { User, getUsers, login } from "@/lib/auth"; // Assuming login gives you current user
 
-
-
 export default function DashboardHome() {
   const [users, setUsers] = useState<User[]>([]);
 
@@ -35,7 +33,9 @@ export default function DashboardHome() {
             <CardTitle>Today Sales</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-4xl font-extrabold">{todaySales.toLocaleString()}</div>
+            <div className="text-4xl font-extrabold">
+              {todaySales.toLocaleString()}
+            </div>
           </CardContent>
         </Card>
         <Card className="bg-gradient-to-br from-cyan-400 to-blue-500 text-white">
@@ -43,7 +43,9 @@ export default function DashboardHome() {
             <CardTitle>Monthly Sales</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-4xl font-extrabold">{monthSales.toLocaleString()}</div>
+            <div className="text-4xl font-extrabold">
+              {monthSales.toLocaleString()}
+            </div>
           </CardContent>
         </Card>
         <Card>
@@ -51,7 +53,9 @@ export default function DashboardHome() {
             <CardTitle>Active Members</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-4xl font-extrabold">{users.filter((u) => !u.blocked).length}</div>
+            <div className="text-4xl font-extrabold">
+              {users.filter((u) => !u.blocked).length}
+            </div>
           </CardContent>
         </Card>
         <Card className="relative overflow-hidden">
@@ -66,9 +70,13 @@ export default function DashboardHome() {
               <div className="flex items-center justify-between">
                 <div>
                   <div className="font-semibold">{crown.name}</div>
-                  <div className="text-sm text-muted-foreground">{crown.role.toUpperCase()}</div>
+                  <div className="text-sm text-muted-foreground">
+                    {crown.role.toUpperCase()}
+                  </div>
                 </div>
-                <div className="text-2xl font-bold">{(crown.salesMonth ?? 0).toLocaleString()}</div>
+                <div className="text-2xl font-bold">
+                  {(crown.salesMonth ?? 0).toLocaleString()}
+                </div>
               </div>
             ) : (
               <div className="text-muted-foreground">No salesman yet</div>
@@ -91,13 +99,18 @@ export default function DashboardHome() {
             ];
             const gradient = colors[i % colors.length];
             return (
-              <div key={u.id} className={`rounded-lg p-4 text-white bg-gradient-to-br ${gradient}`}>
+              <div
+                key={u.id}
+                className={`rounded-lg p-4 text-white bg-gradient-to-br ${gradient}`}
+              >
                 <div className="flex items-center justify-between">
                   <div>
                     <div className="font-bold">{u.name}</div>
                     <div className="text-sm opacity-90">{u.role}</div>
                   </div>
-                  <div className="text-2xl font-extrabold">{(u.salesMonth ?? 0).toLocaleString()}</div>
+                  <div className="text-2xl font-extrabold">
+                    {(u.salesMonth ?? 0).toLocaleString()}
+                  </div>
                 </div>
               </div>
             );

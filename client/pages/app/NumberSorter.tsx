@@ -23,7 +23,9 @@ export default function NumberSorter() {
   const timerRef = useRef<number | null>(null);
   const socket = useMemo(() => (user ? getSocket(user.id) : null), [user?.id]);
 
-  const [sorterAnnouncement, setSorterAnnouncement] = useState<any | null>(null);
+  const [sorterAnnouncement, setSorterAnnouncement] = useState<any | null>(
+    null,
+  );
   const [countdown, setCountdown] = useState<number | null>(null);
   const countdownRef = useRef<number | null>(null);
 
@@ -370,7 +372,7 @@ export default function NumberSorter() {
             <div className="border-t bg-gray-50 p-4">
               <div className="flex items-center justify-between text-xs text-gray-600">
                 <span>
-                  Auto-distribution {auto ? "enabled" : "disabled"} • Next send: {" "}
+                  Auto-distribution {auto ? "enabled" : "disabled"} • Next send:{" "}
                   {auto ? `${intervalMin}m` : "Manual only"}
                 </span>
                 <div className="flex items-center gap-2">
@@ -389,20 +391,29 @@ export default function NumberSorter() {
               <div className="mt-3 flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <label className="text-sm text-gray-600">Timer (sec)</label>
-                  <select value={timerSeconds} onChange={(e) => setTimerSeconds(Number(e.target.value))} className="h-8 rounded border px-2 ml-2">
-                    {[30,60,120,180,300].map((s)=>(<option key={s} value={s}>{s}s</option>))}
+                  <select
+                    value={timerSeconds}
+                    onChange={(e) => setTimerSeconds(Number(e.target.value))}
+                    className="h-8 rounded border px-2 ml-2"
+                  >
+                    {[30, 60, 120, 180, 300].map((s) => (
+                      <option key={s} value={s}>
+                        {s}s
+                      </option>
+                    ))}
                   </select>
                 </div>
                 <div>
                   {sorterAnnouncement ? (
                     <div className="text-sm text-gray-700">
-                      Announcement: {sorterAnnouncement.total} numbers ready • per user {sorterAnnouncement.perUser}
+                      Announcement: {sorterAnnouncement.total} numbers ready •
+                      per user {sorterAnnouncement.perUser}
                     </div>
                   ) : null}
                 </div>
               </div>
 
-              {user?.role === 'salesman' && (
+              {user?.role === "salesman" && (
                 <div className="mt-3">
                   <button
                     className="rounded bg-indigo-600 px-3 py-2 text-white"
@@ -410,17 +421,19 @@ export default function NumberSorter() {
                       if (!sorterAnnouncement) return;
                       // start countdown
                       setCountdown(timerSeconds);
-                      if (countdownRef.current) window.clearInterval(countdownRef.current as any);
+                      if (countdownRef.current)
+                        window.clearInterval(countdownRef.current as any);
                       countdownRef.current = window.setInterval(() => {
                         setCountdown((c) => {
                           if (!c) return null;
                           if (c <= 1) {
-                            if (countdownRef.current) window.clearInterval(countdownRef.current as any);
+                            if (countdownRef.current)
+                              window.clearInterval(countdownRef.current as any);
                             // claim assignment
-                            fetch('/api/sorter/claim', {
-                              method: 'POST',
-                              credentials: 'include',
-                              headers: { 'Content-Type': 'application/json' },
+                            fetch("/api/sorter/claim", {
+                              method: "POST",
+                              credentials: "include",
+                              headers: { "Content-Type": "application/json" },
                               body: JSON.stringify({ userId: user.id }),
                             }).catch(() => {});
                             return null;
@@ -430,7 +443,9 @@ export default function NumberSorter() {
                       }, 1000) as any;
                     }}
                   >
-                    {countdown ? `Time left: ${countdown}s` : `Copy & Start ${timerSeconds}s`}
+                    {countdown
+                      ? `Time left: ${countdown}s`
+                      : `Copy & Start ${timerSeconds}s`}
                   </button>
                 </div>
               )}

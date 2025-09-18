@@ -58,7 +58,12 @@ export default function AppLayout() {
         <SidebarHeader>
           <div className="flex items-center gap-2 px-2 py-1.5">
             <div className="size-6 rounded-md bg-gradient-to-br from-indigo-500 to-emerald-400" />
-            <div className="font-extrabold tracking-tight" style={{ marginLeft: '-1px' }}>Team-Work</div>
+            <div
+              className="font-extrabold tracking-tight"
+              style={{ marginLeft: "-1px" }}
+            >
+              Team-Work
+            </div>
           </div>
         </SidebarHeader>
         <SidebarContent>
@@ -160,7 +165,10 @@ export default function AppLayout() {
       <SidebarInset>
         <div className="sticky top-0 z-10 w-full backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b">
           <div className="container flex h-14 items-center justify-between">
-            <div className="flex items-center gap-3" style={{ marginLeft: '-1px' }}>
+            <div
+              className="flex items-center gap-3"
+              style={{ marginLeft: "-1px" }}
+            >
               <SidebarTrigger />
               <span className="text-sm text-muted-foreground">
                 {user ? `Signed in as ${user.name}` : ""}
@@ -184,8 +192,11 @@ export default function AppLayout() {
             </div>
           </div>
         </div>
-        <div className="container" style={{ height: 'calc(100vh - 56px)', overflow: 'hidden' }}>
-          <div style={{ height: '100%', overflow: 'auto' }}>
+        <div
+          className="container"
+          style={{ height: "calc(100vh - 56px)", overflow: "hidden" }}
+        >
+          <div style={{ height: "100%", overflow: "auto" }}>
             <Outlet />
           </div>
         </div>

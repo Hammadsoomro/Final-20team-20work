@@ -26,7 +26,9 @@ export default function TeamChat() {
   const [online, setOnline] = useState<string[]>([]);
   const [filter, setFilter] = useState("");
   const [activeRoom, setActiveRoom] = useState<
-    { type: "team" } | { type: "dm"; userId: string; roomId: string } | { type: "room"; roomId: string; name?: string }
+    | { type: "team" }
+    | { type: "dm"; userId: string; roomId: string }
+    | { type: "room"; roomId: string; name?: string }
   >({ type: "team" });
   const activeRoomRef = useRef(activeRoom);
   const [messages, setMessages] = useState<Message[]>([]);
@@ -55,7 +57,10 @@ export default function TeamChat() {
       const known = contacts.find((c) => c.id === msg.senderId);
       if (!known) {
         try {
-          const r = await fetch(`/api/users/${encodeURIComponent(msg.senderId)}`, { credentials: "include" });
+          const r = await fetch(
+            `/api/users/${encodeURIComponent(msg.senderId)}`,
+            { credentials: "include" },
+          );
           if (r.ok) {
             const u = await r.json();
             setContacts((c) => [...c, u]);
@@ -64,7 +69,7 @@ export default function TeamChat() {
       }
 
       const current = activeRoomRef.current;
-        const isCurrent =
+      const isCurrent =
         (current.type === "team" && msg.roomId === "team") ||
         (current.type === "dm" && msg.roomId === current.roomId) ||
         (current.type === "room" && msg.roomId === current.roomId);
@@ -101,8 +106,15 @@ export default function TeamChat() {
       try {
         setMessages([]);
         const roomId =
-          activeRoom.type === "team" ? "team" : activeRoom.type === "dm" ? activeRoom.roomId : activeRoom.roomId;
-        const res = await fetch(`/api/chat/${encodeURIComponent(roomId)}/messages?limit=200`, { credentials: "include" });
+          activeRoom.type === "team"
+            ? "team"
+            : activeRoom.type === "dm"
+              ? activeRoom.roomId
+              : activeRoom.roomId;
+        const res = await fetch(
+          `/api/chat/${encodeURIComponent(roomId)}/messages?limit=200`,
+          { credentials: "include" },
+        );
         if (!res.ok) throw new Error("history");
         setMessages(await res.json());
       } catch {
@@ -145,7 +157,9 @@ export default function TeamChat() {
 
   async function selectDm(targetId: string) {
     if (!user) return;
-    const r = await fetch(`/api/chat/dm/${user.id}/${targetId}`, { credentials: "include" });
+    const r = await fetch(`/api/chat/dm/${user.id}/${targetId}`, {
+      credentials: "include",
+    });
     const data = (await r.json()) as { roomId: string };
     socket?.emit("chat:join", { roomId: data.roomId });
     clearUnread(data.roomId);
@@ -196,7 +210,7 @@ export default function TeamChat() {
       : contacts.find((c) => c.id === activeRoom.userId)?.email || "";
 
   return (
-    <div className="flex h-full min-h-0 gap-4" style={{ marginLeft: '-4px' }}>
+    <div className="flex h-full min-h-0 gap-4" style={{ marginLeft: "-4px" }}>
       {/* Left contacts panel */}
       <div className="w-64 shrink-0 rounded-lg border bg-white flex flex-col h-full">
         <div className="flex items-center justify-between border-b p-4">
@@ -304,11 +318,17 @@ export default function TeamChat() {
                 </div>
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center justify-between">
-                    <div className="truncate font-medium text-gray-900">{c.name}</div>
-                    <span className="text-[10px] uppercase text-gray-400">{c.role}</span>
+                    <div className="truncate font-medium text-gray-900">
+                      {c.name}
+                    </div>
+                    <span className="text-[10px] uppercase text-gray-400">
+                      {c.role}
+                    </span>
                   </div>
                   <div className="flex items-center justify-between">
-                    <div className="truncate text-xs text-gray-500">{c.email}</div>
+                    <div className="truncate text-xs text-gray-500">
+                      {c.email}
+                    </div>
                     {user && getUnread(dmRoomKey(user.id, c.id)) > 0 && (
                       <span className="ml-2 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-red-500 px-1 text-[10px] text-white">
                         {getUnread(dmRoomKey(user.id, c.id))}
@@ -321,12 +341,24 @@ export default function TeamChat() {
           ))}
         </div>
 
-        <div className="border-t bg-gray-50 text-xs text-gray-600" style={{ minHeight: 0, width: 'auto', height: 'auto', flexGrow: 0, alignSelf: 'center', display: 'flex', flexDirection: 'column', justifyContent: 'flex-start', alignItems: 'flex-start', margin: '-19px 0 0 4px' }}>
+        <div
+          className="border-t bg-gray-50 text-xs text-gray-600"
+          style={{
+            minHeight: 0,
+            width: "auto",
+            height: "auto",
+            flexGrow: 0,
+            alignSelf: "center",
+            display: "flex",
+            flexDirection: "column",
+            justifyContent: "flex-start",
+            alignItems: "flex-start",
+            margin: "-19px 0 0 4px",
+          }}
+        >
           <div>Total Contacts: {totals.total}</div>
           <div className="mt-1">
-            <div style={{ marginTop: '14px' }}>
-              Online:
-            </div>
+            <div style={{ marginTop: "14px" }}>Online:</div>
             {totals.online}
           </div>
           <div className="mt-1">Pinned: {totals.pinned}</div>
@@ -385,7 +417,9 @@ export default function TeamChat() {
                       className={`max-w-[70%] rounded-md px-3 py-2 text-sm ${isMe ? "ml-auto bg-indigo-600 text-white" : "bg-gray-100 text-gray-900"}`}
                     >
                       <div>{m.text}</div>
-                      <div className="mt-1 text-[10px] text-gray-400">{new Date(m.createdAt).toLocaleTimeString()}</div>
+                      <div className="mt-1 text-[10px] text-gray-400">
+                        {new Date(m.createdAt).toLocaleTimeString()}
+                      </div>
                     </div>
                   </div>
                 );
