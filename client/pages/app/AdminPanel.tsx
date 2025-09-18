@@ -16,7 +16,7 @@ export default function AdminPanel() {
   const [users, setUsers] = useState<User[]>([]);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
-  const [role, setRole] = useState<"scrapper" | "seller">("seller");
+  const [role, setRole] = useState<"scrapper" | "salesman">("salesman");
   const [password, setPassword] = useState("");
 
   useEffect(() => {
