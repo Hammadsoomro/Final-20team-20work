@@ -32,6 +32,34 @@ export default function AutoDistribution() {
   >([]);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
 
+  // Load saved settings on mount
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem("autoDist.settings");
+      if (raw) {
+        const s = JSON.parse(raw);
+        if (typeof s.perUser === "number") setPerUser(s.perUser);
+        if (typeof s.timerSeconds === "number") setTimerSeconds(s.timerSeconds);
+        if (s.selectionMode === "all" || s.selectionMode === "selected")
+          setSelectionMode(s.selectionMode);
+        if (Array.isArray(s.selectedIds)) setSelectedIds(s.selectedIds);
+      }
+    } catch {}
+  }, []);
+
+  // Persist settings whenever they change
+  useEffect(() => {
+    try {
+      const payload = {
+        perUser,
+        timerSeconds,
+        selectionMode,
+        selectedIds,
+      };
+      localStorage.setItem("autoDist.settings", JSON.stringify(payload));
+    } catch {}
+  }, [perUser, timerSeconds, selectionMode, selectedIds]);
+
   async function refreshQueue() {
     setLoading(true);
     try {
