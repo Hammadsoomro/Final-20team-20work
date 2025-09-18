@@ -147,6 +147,7 @@ export const distribute: RequestHandler = async (req, res) => {
       text: JSON.stringify({
         type: "sorter:announce",
         perUser,
+        timerSeconds: timerSeconds || 0,
         total: assignments.reduce((s, a) => s + a.values.length, 0),
         timestamp: Date.now(),
       }),
