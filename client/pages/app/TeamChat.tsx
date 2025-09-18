@@ -224,6 +224,12 @@ export default function TeamChat() {
   const [countdown, setCountdown] = useState<number | null>(null);
   const countdownRef = useRef<number | null>(null);
 
+  useEffect(() => {
+    return () => {
+      if (countdownRef.current) window.clearInterval(countdownRef.current as any);
+    };
+  }, []);
+
   async function requestNumbers() {
     if (!user || !sorterAnnounce) return;
     if (countdownRef.current) window.clearInterval(countdownRef.current as any);
