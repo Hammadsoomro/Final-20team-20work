@@ -1,13 +1,15 @@
 [build]
-  command = "npm run build:client"
+  command = "npm run build"
   functions = "netlify/functions"
   publish = "dist/spa"
 
+[build.environment]
+  MONGODB_URI = "mongodb+srv://Hammad:Soomro@cluster0.bqlcjok.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"
+  MONGODB_DB = "teamwork"
 
 [functions]
-  external_node_modules = ["express"]
   node_bundler = "esbuild"
-  
+
 [[redirects]]
   force = true
   from = "/api/*"
