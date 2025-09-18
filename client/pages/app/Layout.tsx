@@ -43,6 +43,15 @@ export default function AppLayout() {
     return () => off();
   }, []);
 
+  // Lock body scrolling so only the app content scrolls
+  useEffect(() => {
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = prev;
+    };
+  }, []);
+
   return (
     <SidebarProvider>
       <Sidebar collapsible="icon" variant="floating">
