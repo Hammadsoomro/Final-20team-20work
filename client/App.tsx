@@ -19,6 +19,7 @@ import AdminPanel from "@/pages/app/AdminPanel";
 import Settings from "@/pages/app/Settings";
 import Attendance from "@/pages/app/Attendance";
 import RequireAdmin from "@/pages/app/RequireAdmin";
+import AutoDistribution from "@/pages/app/AutoDistribution";
 
 const queryClient = new QueryClient();
 
@@ -42,6 +43,7 @@ const App = () => (
               <Route index element={<DashboardHome />} />
               <Route path="chat" element={<TeamChat />} />
               <Route path="sorter" element={<NumberSorter />} />
+              <Route path="auto-distribution" element={<AutoDistribution />} />
               <Route path="sales" element={<Sales />} />
               <Route path="attendance" element={<Attendance />} />
               <Route
