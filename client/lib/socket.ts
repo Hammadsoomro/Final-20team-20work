@@ -12,6 +12,7 @@ class RestSocket {
   private events: Map<string, Set<Handler>> = new Map();
   private presenceTimer: any = null;
   private messagesTimer: any = null;
+  private sorterTimer: any = null;
   private lastSeenPerRoom: Map<string, number> = new Map();
   private joinedRooms: Set<string> = new Set();
 
@@ -95,6 +96,7 @@ class RestSocket {
     this.connected = false;
     if (this.presenceTimer) clearInterval(this.presenceTimer);
     if (this.messagesTimer) clearInterval(this.messagesTimer);
+    if (this.sorterTimer) clearInterval(this.sorterTimer);
     this.events.clear();
     this.joinedRooms.clear();
     this.lastSeenPerRoom.clear();
@@ -156,6 +158,17 @@ class RestSocket {
         }
       } catch {}
     }, 2000);
+
+    // Sorter queue polling to keep Auto Distribution in sync without websockets
+    this.sorterTimer = setInterval(async () => {
+      try {
+        const r = await fetch("/api/sorter", { credentials: "include" });
+        if (!r.ok) return;
+        const data = await r.json();
+        const list = (data?.pending as string[]) || [];
+        this.emitEvent("sorter:update", list);
+      } catch {}
+    }, 3000);
   }
 }
 
