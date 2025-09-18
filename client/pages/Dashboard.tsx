@@ -430,7 +430,7 @@ function TeamList({
 }) {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
-  const [role, setRole] = useState<"scrapper" | "seller">("seller");
+  const [role, setRole] = useState<"scrapper" | "salesman">("salesman");
   return (
     <div className="space-y-4">
       {canManage && (
