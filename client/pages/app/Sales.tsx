@@ -137,7 +137,7 @@ export default function Sales() {
         <Metric label="Monthly Total" value={totals.month} color="green" />
         <Metric label="Team Members" value={totals.members} color="purple" />
         <div className="rounded-lg p-4 bg-white shadow-sm">
-          <div className="text-xs text-muted-foreground">Top Seller</div>
+          <div className="text-xs text-muted-foreground">Top Salesman</div>
           <div className="mt-2 text-lg font-semibold">
             {/* show top seller name or none */}
             {(users.length &&
