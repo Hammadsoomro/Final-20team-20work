@@ -137,6 +137,26 @@ export const distribute: RequestHandler = async (req, res) => {
     fresh.map((d: any) => d.value),
   );
 
+  // Insert a room-level announcement for sorter with timer info so clients (salesmen) can see and start their timers
+  try {
+    const msgCol = db.collection("messages");
+    const announce = {
+      roomId: "sorter",
+      senderId: "system",
+      text: JSON.stringify({
+        type: "sorter:announce",
+        perUser,
+        total: assignments.reduce((s, a) => s + a.values.length, 0),
+        timestamp: Date.now(),
+      }),
+      createdAt: Date.now(),
+    };
+    await msgCol.insertOne(announce as any);
+    io?.to("sorter").emit("chat:message", announce);
+  } catch (e) {
+    // ignore
+  }
+
   res.json({ assignments, remaining });
 };
 
