@@ -251,6 +251,28 @@ export default function TeamChat() {
               </span>
             )}
           </Button>
+
+          <Button
+            className="mt-2 w-full justify-start border bg-white relative"
+            onClick={() => {
+              if (socket) socket.emit("chat:join", { roomId: "sorter" });
+              setActiveRoom({ type: "room", roomId: "sorter", name: "Sorter" });
+              clearUnread("sorter");
+            }}
+          >
+            <div className="mr-2 inline-flex h-10 w-10 items-center justify-center rounded-full bg-gray-100 text-gray-700">
+              S
+            </div>
+            <div className="text-left">
+              <div className="font-medium">Sorter</div>
+              <div className="text-xs text-gray-400">Auto distribution</div>
+            </div>
+            {getUnread("sorter") > 0 && (
+              <span className="absolute right-3 top-2 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-red-500 px-1 text-[10px] text-white">
+                {getUnread("sorter")}
+              </span>
+            )}
+          </Button>
         </div>
         <div className="h-[44vh] overflow-y-auto p-2">
           {filtered.map((c) => (
