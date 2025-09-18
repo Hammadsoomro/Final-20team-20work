@@ -209,6 +209,44 @@ export default function TeamChat() {
       ? "Everyone can see this conversation"
       : contacts.find((c) => c.id === activeRoom.userId)?.email || "";
 
+  const sorterAnnounce = useMemo(() => {
+    if (!(activeRoom.type === "room" && activeRoom.roomId === "sorter")) return null;
+    for (let i = messages.length - 1; i >= 0; i--) {
+      const m = messages[i];
+      try {
+        const obj = JSON.parse(m.text);
+        if (obj && obj.type === "sorter:announce") return obj as any;
+      } catch {}
+    }
+    return null;
+  }, [messages, activeRoom]);
+
+  const [countdown, setCountdown] = useState<number | null>(null);
+  const countdownRef = useRef<number | null>(null);
+
+  async function requestNumbers() {
+    if (!user || !sorterAnnounce) return;
+    if (countdownRef.current) window.clearInterval(countdownRef.current as any);
+    setCountdown(sorterAnnounce.timerSeconds || 0);
+    countdownRef.current = window.setInterval(() => {
+      setCountdown((c) => {
+        if (c === null) return c;
+        if (c <= 1) {
+          if (countdownRef.current) window.clearInterval(countdownRef.current as any);
+          countdownRef.current = null;
+          fetch("/api/sorter/claim", {
+            method: "POST",
+            credentials: "include",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ userId: user.id }),
+          }).catch(() => {});
+          return null;
+        }
+        return c - 1;
+      });
+    }, 1000) as any;
+  }
+
   return (
     <div className="flex h-full min-h-0 gap-4" style={{ marginLeft: "-4px" }}>
       {/* Left contacts panel */}
