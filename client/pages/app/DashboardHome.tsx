@@ -78,6 +78,32 @@ export default function DashboardHome() {
       </div>
 
       <QuickActions />
+
+      <div className="mt-6">
+        <h3 className="text-lg font-semibold mb-4">Team Members</h3>
+        <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+          {users.map((u, i) => {
+            const colors = [
+              "from-indigo-500 to-pink-500",
+              "from-amber-400 to-yellow-500",
+              "from-cyan-400 to-blue-500",
+              "from-emerald-400 to-green-500",
+            ];
+            const gradient = colors[i % colors.length];
+            return (
+              <div key={u.id} className={`rounded-lg p-4 text-white bg-gradient-to-br ${gradient}`}>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <div className="font-bold">{u.name}</div>
+                    <div className="text-sm opacity-90">{u.role}</div>
+                  </div>
+                  <div className="text-2xl font-extrabold">{(u.salesMonth ?? 0).toLocaleString()}</div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
     </div>
   );
 }
