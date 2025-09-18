@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Crown } from "lucide-react";
+import QuickActions from "@/components/QuickActions";
 import { User, getUsers, login } from "@/lib/auth"; // Assuming login gives you current user
 
 
