@@ -104,7 +104,7 @@ export const distribute: RequestHandler = async (req, res) => {
 
   // Create assignments for users but don't send immediately. Salesmen will claim when their timer completes.
   const qcol = db.collection("sorter_queue");
-  const assignments: { userId: string; values: string[] }[] = sellerIds.map(
+  const assignments: { userId: string; values: string[] }[] = salesmanIds.map(
     (id) => ({ userId: id, values: [] }),
   );
   for (let i = 0; i < pending.length; i++) {
