@@ -415,23 +415,6 @@ export default function TeamChat() {
             <div className="text-sm text-gray-500">{subtitle}</div>
           </div>
         </div>
-        {activeRoom.type === "room" && activeRoom.roomId === "sorter" && (
-          <div className="flex items-center justify-between border-b bg-emerald-50 p-3">
-            <div className="text-sm text-emerald-800">
-              <span>Timer: {savedTimer}s</span>
-            </div>
-            <div className="flex items-center gap-3">
-              <Button
-                onClick={requestNumbers}
-                className="bg-emerald-600 hover:bg-emerald-700 text-white"
-              >
-                {countdown !== null
-                  ? `Requesting... ${countdown}s`
-                  : "Request for numbers"}
-              </Button>
-            </div>
-          </div>
-        )}
         <div
           ref={listRef}
           className="flex-1 overflow-y-auto bg-gradient-to-b from-white to-gray-50 p-4"
