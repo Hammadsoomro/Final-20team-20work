@@ -6,11 +6,29 @@ export default function Attendance() {
   const { user } = useAuth();
   const [records, setRecords] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
+  const [names, setNames] = useState<Record<string, string>>({});
 
   useEffect(() => {
     if (!user) return;
-    if (user.role === "admin") fetchRecords();
+    if (user.role === "admin") {
+      fetchRecords();
+      fetchNames();
+    }
   }, [user]);
+
+  async function fetchNames() {
+    try {
+      const ownerId = user?.ownerId || user?.id;
+      const r = await fetch(`/api/users?ownerId=${encodeURIComponent(ownerId)}`, {
+        credentials: "include",
+      });
+      if (!r.ok) return;
+      const list = await r.json();
+      const map: Record<string, string> = {};
+      for (const u of list) map[u.id] = u.name || u.email || u.id;
+      setNames(map);
+    } catch {}
+  }
 
   async function fetchRecords() {
     try {
