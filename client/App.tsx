@@ -45,6 +45,7 @@ const App = () => (
               <Route path="chat" element={<TeamChat />} />
               <Route path="sorter" element={<NumberSorter />} />
               <Route path="auto-distribution" element={<AutoDistribution />} />
+              <Route path="assign-members" element={<RequireAuth><RequireAdmin><AssignToMembers /></RequireAdmin></RequireAuth>} />
               <Route path="sales" element={<Sales />} />
               <Route path="attendance" element={<Attendance />} />
               <Route
