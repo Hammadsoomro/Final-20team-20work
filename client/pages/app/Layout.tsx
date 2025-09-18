@@ -160,7 +160,7 @@ export default function AppLayout() {
       <SidebarInset>
         <div className="sticky top-0 z-10 w-full backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b">
           <div className="container flex h-14 items-center justify-between">
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-3" style={{ marginLeft: '-1px' }}>
               <SidebarTrigger />
               <span className="text-sm text-muted-foreground">
                 {user ? `Signed in as ${user.name}` : ""}
