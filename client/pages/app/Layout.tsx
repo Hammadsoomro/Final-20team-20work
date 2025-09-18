@@ -58,7 +58,7 @@ export default function AppLayout() {
         <SidebarHeader>
           <div className="flex items-center gap-2 px-2 py-1.5">
             <div className="size-6 rounded-md bg-gradient-to-br from-indigo-500 to-emerald-400" />
-            <div className="font-extrabold tracking-tight">TeamFlow</div>
+            <div className="font-extrabold tracking-tight" style={{ marginLeft: '-1px' }}>Team-Work</div>
           </div>
         </SidebarHeader>
         <SidebarContent>
