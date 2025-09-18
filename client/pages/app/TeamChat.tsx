@@ -100,18 +100,11 @@ export default function TeamChat() {
     (async () => {
       try {
         setMessages([]);
-        if (activeRoom.type === "team") {
-          const res = await fetch(`/api/chat/${encodeURIComponent("team")}/messages?limit=200`, { credentials: "include" });
-          if (!res.ok) throw new Error("history");
-          setMessages(await res.json());
-        } else {
-          const res = await fetch(
-            `/api/chat/${encodeURIComponent(activeRoom.roomId)}/messages?limit=200`,
-            { credentials: "include" },
-          );
-          if (!res.ok) throw new Error("history");
-          setMessages(await res.json());
-        }
+        const roomId =
+          activeRoom.type === "team" ? "team" : activeRoom.type === "dm" ? activeRoom.roomId : activeRoom.roomId;
+        const res = await fetch(`/api/chat/${encodeURIComponent(roomId)}/messages?limit=200`, { credentials: "include" });
+        if (!res.ok) throw new Error("history");
+        setMessages(await res.json());
       } catch {
         setMessages([]);
       }
