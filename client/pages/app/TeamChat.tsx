@@ -385,27 +385,12 @@ export default function TeamChat() {
           ))}
         </div>
 
-        <div
-          className="border-t bg-gray-50 text-xs text-gray-600"
-          style={{
-            minHeight: 0,
-            width: "auto",
-            height: "auto",
-            flexGrow: 0,
-            alignSelf: "center",
-            display: "flex",
-            flexDirection: "column",
-            justifyContent: "flex-start",
-            alignItems: "flex-start",
-            margin: "-19px 0 0 4px",
-          }}
-        >
-          <div>Total Contacts: {totals.total}</div>
-          <div className="mt-1">
-            <div style={{ marginTop: "14px" }}>Online:</div>
-            {totals.online}
+        <div className="border-t bg-gray-50 text-xs text-gray-600 p-3">
+          <div className="flex items-center justify-between gap-3">
+            <div>Total Contacts: {totals.total}</div>
+            <div>Online: {totals.online}</div>
+            <div>Pinned: {totals.pinned}</div>
           </div>
-          <div className="mt-1">Pinned: {totals.pinned}</div>
         </div>
       </div>
 
@@ -442,8 +427,7 @@ export default function TeamChat() {
             <div className="flex items-center gap-3">
               <Button
                 onClick={requestNumbers}
-                disabled={!sorterAnnounce || countdown !== null}
-                className="bg-emerald-600 text-white"
+                className="bg-emerald-600 hover:bg-emerald-700 text-white"
               >
                 {countdown !== null ? `Requesting... ${countdown}s` : "Request for numbers"}
               </Button>
